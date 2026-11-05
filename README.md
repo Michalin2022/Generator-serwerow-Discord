@@ -1,2 +1,2 @@
-# Generator-serwerow-Discord
-Generator serwerów Discord 
+# Generator serwerów Discord
+COMING SOON
