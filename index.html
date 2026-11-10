@@ -95,6 +95,7 @@
   .error { color: #ff8a8c; margin-top: 10px; line-height: 1.4; animation: shake .4s; }
   .banner { border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; font-size: 14px; line-height: 1.45;
     background: rgba(240,178,50,.12); color: var(--warn); border: 1px solid rgba(240,178,50,.3); animation: rise .35s var(--ease) both; }
+  .banner.info { background: rgba(88,101,242,.14); color: #c9cdfb; border-color: rgba(88,101,242,.4); }
   .banner.bad { background: rgba(242,63,67,.12); color: #ff8a8c; border-color: rgba(242,63,67,.35); }
   .banner b, .banner code { color: #fff; }
   code { background: var(--dark); border-radius: 4px; padding: 1px 6px; font-size: 12px; word-break: break-all; }
@@ -201,9 +202,6 @@
   /* ================= ADMIN ================= */
   .login { max-width: 380px; margin: 12vh auto 0; text-align: center; }
   .login input { text-align: center; letter-spacing: .4em; font-size: 24px; margin: 14px 0; }
-  .adm-head { position: sticky; top: 0; z-index: 20; background: rgba(30,31,34,.92); backdrop-filter: blur(8px);
-    margin: -24px -16px 18px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
-    gap: 10px; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
   .adm-title { display: flex; align-items: center; gap: 10px; font-weight: 700; color: #fff; font-size: 17px; }
   .adm-logo { width: 32px; height: 32px; border-radius: 50%; background: var(--accent);
     display: flex; align-items: center; justify-content: center; font-size: 17px; }
@@ -279,6 +277,50 @@
   .modal p { margin: 0 0 16px; line-height: 1.5; }
   .modal .row { justify-content: flex-end; margin: 0; }
 
+  /* ---------- panel admina: pasek, menu (3 kreski), strony ---------- */
+  .adm-bar { position: sticky; top: 0; z-index: 40; background: rgba(30,31,34,.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  .adm-bar-in { max-width: 1000px; margin: 0 auto; padding: 0 12px; height: 52px; display: flex; align-items: center; gap: 10px; }
+  .hamb { width: 40px; height: 40px; padding: 0; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; border-radius: 8px; flex: none; }
+  .hamb:hover { background: var(--hover); }
+  .hamb i { display: block; width: 20px; height: 2px; border-radius: 2px; background: #dbdee1; transition: transform .28s var(--ease), opacity .2s; }
+  .hamb.open i:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .hamb.open i:nth-child(2) { opacity: 0; }
+  .hamb.open i:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  .adm-ttl { font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .adm-ttl .hash { color: var(--muted); font-weight: 400; }
+  #adm-page { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; animation: fadein .25s; }
+  .scrim { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 55; opacity: 0; pointer-events: none; transition: opacity .25s; }
+  .scrim.open { opacity: 1; pointer-events: auto; }
+  .drawer { position: fixed; top: 0; left: 0; bottom: 0; width: 280px; max-width: 86vw; background: var(--side); z-index: 60; transform: translateX(-104%);
+    transition: transform .3s var(--ease); display: flex; flex-direction: column; padding: 14px 10px; box-shadow: 8px 0 30px rgba(0,0,0,.4); }
+  .drawer.open { transform: none; }
+  .dr-head { display: flex; align-items: center; gap: 10px; padding: 4px 8px 14px; border-bottom: 1px solid var(--line); margin-bottom: 10px; color: #fff; font-weight: 700; }
+  .dr-nav { display: grid; gap: 2px; }
+  .nav-item { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: transparent; color: #b5bac1; padding: 10px 12px; border-radius: 8px; font-weight: 600; font-size: 15px; text-decoration: none; }
+  .nav-item:hover { background: var(--hover); color: #fff; text-decoration: none; }
+  .nav-item.active { background: #404249; color: #fff; }
+  .nav-item svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; transition: transform .2s var(--ease); }
+  .nav-item:hover svg { transform: scale(1.12); }
+  .nav-item.logout { color: #ff8a8c; }
+  .nav-item.logout:hover { background: rgba(242,63,67,.14); color: #ff6b6e; }
+  .nav-sp { flex: 1; }
+  .nav-sep { height: 1px; background: var(--line); margin: 8px 4px; }
+  .page { animation: rise .35s var(--ease) both; }
+  .adm-hero h1 { font-size: 28px; }
+  .count { font-variant-numeric: tabular-nums; color: #fff; font-size: 18px; }
+  .sess-bar { height: 6px; border-radius: 4px; background: rgba(0,0,0,.28); margin-top: 12px; overflow: hidden; position: relative; }
+  .sess-bar i { display: block; height: 100%; width: 100%; background: #fff; border-radius: 4px; transition: width 1s linear, background .3s; }
+  .sess-bar.low i { background: #ffb0b2; }
+  .form { display: grid; gap: 14px; }
+  .form label { display: grid; gap: 6px; font-size: 14px; color: #b5bac1; font-weight: 600; }
+  .form label.opt { display: flex; }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+  .kv { display: grid; gap: 6px; font-size: 14px; }
+  .kv div { display: flex; justify-content: space-between; gap: 12px; padding: 8px 10px; background: var(--dark); border-radius: 8px; }
+  .kv span:first-child { color: var(--muted); }
+  .kv span:last-child { color: #fff; text-align: right; word-break: break-word; }
+  .perm { font-size: 11px; color: var(--muted); margin-left: 8px; }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
     html { scroll-behavior: auto; }
@@ -294,9 +336,23 @@
   <nav class="tb-links">
     <a data-link="github" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span>GitHub</span></a>
     <a data-link="tiktok" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg><span>TikTok</span></a>
-    <a data-link="admin" href="#"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg><span>Panel</span></a>
+    <a data-link="admin" href="#"><span style="display:inline!important">Panel</span></a>
   </nav>
 </div></header>
+<header class="adm-bar hidden" id="adm-bar"><div class="adm-bar-in">
+  <button class="hamb" id="hamb" aria-label="Menu"><i></i><i></i><i></i></button>
+  <div class="adm-ttl"><span class="hash">#</span><span id="adm-page">Strona główna</span></div>
+  <span class="tb-sp"></span>
+  <button class="ghost small" id="btn-refresh">↻ Odśwież</button>
+</div></header>
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="dr-head"><span class="logo">⚙️</span> Panel admina</div>
+  <nav class="dr-nav" id="dr-nav"></nav>
+  <div class="nav-sp"></div>
+  <div class="nav-sep"></div>
+  <button class="nav-item logout" id="btn-logout">Wyloguj</button>
+</aside>
 <div class="wrap">
 
   <!-- ===================== STRONA GŁÓWNA ===================== -->
@@ -307,6 +363,7 @@
       <p class="sub" id="main-sub">Opisz swój wymarzony serwer. AI zaprojektuje kategorie, kanały, role i uprawnienia, a nasz bot zbuduje je na Twoim serwerze Discord i sam z niego wyjdzie.</p>
     </div>
 
+    <div id="ann-banner" class="banner info hidden"></div>
     <div id="svc-banner" class="banner bad hidden"></div>
 
     <div id="cfg-warn" class="banner bad hidden">Ustaw poprawny <b>API_URL</b> na początku skryptu w pliku index.html (adres Twojego Workera z Cloudflare).</div>
@@ -315,7 +372,7 @@
       <h2>Opisz serwer</h2>
       <textarea id="prompt" maxlength="800" placeholder="np. Serwer dla fanów Minecrafta po polsku: ogłoszenia, czat, pomoc w budowaniu, kanały głosowe do gry, role dla moderatorów i weteranów"></textarea>
       <div class="row">
-        <span class="muted"><span id="counter">0</span> / 800 · Ctrl+Enter = generuj</span>
+        <span class="muted"><span id="counter">0</span> / <span id="maxp">800</span> · Ctrl+Enter = generuj</span>
         <button id="gen">Generuj Serwer przez AI 🚀</button>
       </div>
       <label class="opt"><input type="checkbox" id="opt-clean"> <span>Usuń wszystkie kanały przed rozpoczęciem</span></label>
@@ -387,7 +444,7 @@
   <!-- ======================== ADMIN: LOGOWANIE ======================== -->
   <div id="view-login" class="hidden">
     <div class="card login">
-      <h1 style="font-size:22px">🔐 Panel admina</h1>
+      <h1 style="font-size:22px">Panel admina</h1>
       <p class="muted">Wpisz 6-cyfrowy kod z aplikacji Authenticator.</p>
       <input type="text" id="code" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="one-time-code">
       <button id="login-btn" style="width:100%">Zaloguj</button>
@@ -397,67 +454,123 @@
 
   <!-- ======================== ADMIN: PANEL ======================== -->
   <div id="view-admin" class="hidden">
-    <div class="adm-head">
-      <div class="adm-title"><div class="adm-logo">⚙️</div> Panel admina <span id="pause-state" class="pill ok">Włączony</span></div>
-      <div class="adm-tools">
-        <label class="auto"><input type="checkbox" id="auto"> Auto 30 s</label>
-        <button class="ghost small" id="btn-refresh">↻ Odśwież</button>
-        <button class="ghost small" id="btn-logout">Wyloguj</button>
+
+    <!-- Strona główna -->
+    <section class="page" id="pg-home">
+      <div id="banners"></div>
+      <div class="hero adm-hero">
+        <i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i>
+        <h1>Witaj, administratorze 👋</h1>
+        <p class="sub">Sesja wygaśnie za <b class="count" id="sess-left">--:--:--</b></p>
+        <div class="sess-bar"><i id="sess-fill"></i></div>
+        <div class="row"><span id="pause-state" class="status-pill load">…</span><span class="muted" id="sess-note" style="color:#e3e5ff"></span></div>
       </div>
-    </div>
-
-    <div id="banners"></div>
-
-    <div class="stats" id="stat-grid"></div>
-
-    <div class="two">
-      <div class="card">
-        <h2>Rozpoczęte generacje – ostatnie 14 dni</h2>
-        <div class="bars" id="bars"></div>
-        <p class="muted" id="stat-note" style="margin:12px 0 0"></p>
-      </div>
-      <div class="card">
-        <h2>Sterowanie</h2>
-        <div class="ctl">
-          <button id="btn-pause" class="danger">⏻ Wyłącz generator</button>
-          <div class="hint">Gdy wyłączony, strona od razu pokazuje „Generator jest wyłączony” i blokuje przycisk Generuj. To samo dzieje się automatycznie, gdy padną wszystkie boty lub klucze Groq. „Resetuj błędy” zdejmuje blokady po awarii.</div>
-          <button id="btn-health" class="ghost">🩺 Testuj wszystkie tokeny</button>
-          <button id="btn-cleanup" class="ghost">🚪 Wyprowadź boty ze wszystkich serwerów</button>
-          <button id="btn-reset" class="ghost">♻️ Resetuj błędy i statystyki</button>
+      <div class="stats" id="stat-mini"></div>
+      <div class="two">
+        <div class="card">
+          <h2>Rozpoczęte generacje – ostatnie 14 dni</h2>
+          <div class="bars" id="bars"></div>
+          <p class="muted" id="stat-note" style="margin:12px 0 0"></p>
+        </div>
+        <div class="card">
+          <h2>Generator</h2>
+          <div class="ctl">
+            <button id="btn-pause" class="danger">Wyłącz generator</button>
+            <button id="btn-bypass" class="ghost hidden">🧪 Włącz dla mnie na 30 min</button>
+            <div class="hint hidden" id="bypass-info"></div>
+            <div class="hint" id="pause-hint">Gdy wyłączony, strona od razu pokazuje „Generator jest wyłączony” i blokuje przycisk Generuj. To samo dzieje się automatycznie, gdy padną wszystkie boty lub klucze Groq.</div>
+            <a class="btn ghost" id="open-site" href="#" target="_blank" rel="noopener">↗ Otwórz stronę generatora</a>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <div class="card">
-      <h2>Konfiguracja każdej aplikacji bota (Discord)</h2>
-      <div class="setup">
-        W <b>discord.com/developers/applications</b>, dla <b>każdego</b> bota:
-        <ol>
-          <li><b>Bot</b> → włącz <b>Public Bot</b> (bez tego nikt poza Tobą nie doda bota).</li>
-          <li><b>OAuth2</b> → <b>Redirects</b> → dodaj dokładnie ten adres i zapisz:</li>
-        </ol>
-        <div class="copyrow"><code id="redir"></code><button class="small" id="copy-redir">Kopiuj</button></div>
-        <ol start="3">
-          <li>Opcja „Requires OAuth2 Code Grant” ma być <b>wyłączona</b>.</li>
-        </ol>
-        <span class="muted">Przycisk „Test” przy bocie pokazuje, czy bot jest publiczny.</span>
+    <!-- Tokeny -->
+    <section class="page hidden" id="pg-tokens">
+      <div class="card">
+        <div class="sec-head"><h2>🧠 Klucze Groq</h2><span class="muted" id="groq-sum"></span></div>
+        <div class="toks" id="tbl-groq"></div>
       </div>
-    </div>
+      <div class="card">
+        <div class="sec-head"><h2>🤖 Boty Discord</h2><span class="muted" id="bot-sum"></span></div>
+        <div class="toks" id="tbl-bots"></div>
+      </div>
+      <div class="card">
+        <h2>Narzędzia tokenów</h2>
+        <div class="res-actions" style="margin:0">
+          <button id="btn-health" class="ghost">🩺 Testuj wszystkie tokeny</button>
+          <button id="btn-cleanup" class="ghost">🚪 Wyprowadź boty ze wszystkich serwerów</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Konfiguracja każdej aplikacji bota (Discord)</h2>
+        <div class="setup">
+          W <b>discord.com/developers/applications</b>, dla <b>każdego</b> bota:
+          <ol>
+            <li><b>Bot</b> → włącz <b>Public Bot</b> (bez tego nikt poza Tobą nie doda bota).</li>
+            <li><b>OAuth2</b> → <b>Redirects</b> → dodaj dokładnie ten adres i zapisz:</li>
+          </ol>
+          <div class="copyrow"><code id="redir"></code><button class="small" id="copy-redir">Kopiuj</button></div>
+          <ol start="3">
+            <li>Opcja „Requires OAuth2 Code Grant” ma być <b>wyłączona</b>.</li>
+          </ol>
+          <span class="muted">Przycisk „Test” przy bocie pokazuje, czy bot jest publiczny.</span>
+        </div>
+      </div>
+    </section>
 
-    <div class="card">
-      <div class="sec-head"><h2>🧠 Klucze Groq</h2><span class="muted" id="groq-sum"></span></div>
-      <div class="toks" id="tbl-groq"></div>
-    </div>
+    <!-- Statystyki -->
+    <section class="page hidden" id="pg-stats">
+      <div class="stats" id="stat-grid"></div>
+      <div class="card">
+        <div class="sec-head"><h2>Ostatnie zdarzenia</h2><button class="ghost small" id="btn-export">⬇ Pobierz statystyki (JSON)</button></div>
+        <div class="evs" id="log-list"></div>
+      </div>
+    </section>
 
-    <div class="card">
-      <div class="sec-head"><h2>🤖 Boty Discord</h2><span class="muted" id="bot-sum"></span></div>
-      <div class="toks" id="tbl-bots"></div>
-    </div>
+    <!-- Laboratorium AI -->
+    <section class="page hidden" id="pg-lab">
+      <div class="card">
+        <h2>Laboratorium AI</h2>
+        <p class="muted" style="margin:0 0 12px">Sprawdź, co AI zaprojektuje z danego opisu, bez dodawania bota i bez zużywania limitu botów. Zużywa tylko klucz Groq.</p>
+        <textarea id="lab-prompt" maxlength="2000" placeholder="np. Serwer dla fanów anime po polsku z kanałami na recenzje i rolami za poziomy"></textarea>
+        <div class="row"><span class="muted" id="lab-meta"></span><button id="lab-run">Zaprojektuj</button></div>
+      </div>
+      <div class="card hidden" id="lab-card">
+        <div class="sec-head"><h2 id="lab-title">Wynik</h2><button class="ghost small" id="lab-copy">Kopiuj JSON</button></div>
+        <div class="tree" id="lab-tree"></div>
+        <div class="roles" id="lab-roles"></div>
+      </div>
+    </section>
 
-    <div class="card">
-      <h2>Ostatnie zdarzenia</h2>
-      <div class="evs" id="log-list"></div>
-    </div>
+    <!-- Ustawienia -->
+    <section class="page hidden" id="pg-settings">
+      <div class="card">
+        <h2>Ustawienia generatora</h2>
+        <div class="form">
+          <label>Komunikat na stronie głównej <span class="muted">(pusty = brak)</span>
+            <input type="text" id="set-ann" maxlength="200" placeholder="np. Dziś działamy do 22:00"></label>
+          <label>Własny komunikat, gdy generator jest wyłączony <span class="muted">(pusty = domyślny)</span>
+            <input type="text" id="set-off" maxlength="160" placeholder="Generator jest wyłączony."></label>
+          <div class="form-grid">
+            <label>Serwerów na bota / godz.<input type="number" id="set-hourly" min="1" max="100" placeholder="domyślnie"></label>
+            <label>Startów na minutę z jednego IP<input type="number" id="set-rate" min="1" max="60" placeholder="domyślnie"></label>
+            <label>Maks. znaków opisu<input type="number" id="set-maxp" min="100" max="2000" placeholder="domyślnie"></label>
+          </div>
+          <label class="opt" style="margin-top:4px"><input type="checkbox" id="set-clean"> <span>Pozwól odwiedzającym na opcję „Usuń wszystkie kanały”</span></label>
+          <div class="row" style="justify-content:flex-end"><button id="set-save" class="good">Zapisz ustawienia</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Informacje o systemie</h2>
+        <div class="kv" id="sys-info"></div>
+      </div>
+      <div class="card">
+        <h2>Strefa ryzyka</h2>
+        <p class="muted" style="margin:0 0 12px">Zdejmuje blokady tokenów po awariach i zeruje liczniki. Tego nie da się cofnąć.</p>
+        <button id="btn-reset" class="danger">♻️ Resetuj błędy i statystyki</button>
+      </div>
+    </section>
   </div>
 
 </div>
@@ -466,7 +579,7 @@
   <nav class="eb-links">
     <a data-link="github" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
     <a data-link="tiktok" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>TikTok</a>
-    <a data-link="admin" href="#"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>Panel Administracyjny</a>
+    <a data-link="admin" href="#">Panel Administracyjny</a>
   </nav>
 </div></footer>
 <div class="toasts" id="toasts"></div>
@@ -475,7 +588,7 @@
 /* ======================= KONFIGURACJA FRONTENDU ======================= */
 const API_URL = "https://verity.2fnh7sft5c.workers.dev";
 
-/* Linki w pasku u góry i w stopce (endbar). Wpisz swoje adresy. */
+/* Linki w pasku u góry i w stopce (endbar). */
 const LINKS = {
   github: "https://github.com/Michalin2022/Generator-serwerow-Discord",
   tiktok: "https://www.tiktok.com/@Michalin2022",
@@ -621,30 +734,61 @@ function acquireLock(job) {
 }
 
 /* ---- status generatora (włączony / wyłączony / awaria) ---- */
-const svc = { state: "load", message: "" };
+const svc = { state: "load", message: "", bypassUntil: 0, announcement: "", allowClean: true, maxPrompt: 800 };
+/* Przepustka administratora (panel → „Włącz dla mnie na 30 min”) leży w localStorage tej samej strony. */
+function bypassInfo() {
+  try {
+    const v = JSON.parse(localStorage.getItem("aidg_bypass") || "null");
+    if (v && v.token && v.until > Date.now()) return v;
+  } catch (e) { /* brak przepustki */ }
+  return null;
+}
+const svcBlocked = () => svc.state === "down" || (svc.state === "off" && !(svc.bypassUntil > Date.now()));
 function refreshGen() {
   const g = $("gen");
   if (!g) return;
-  const off = svc.state === "off" || svc.state === "down";
+  const off = svcBlocked();
   g.disabled = busy || off;
   g.textContent = off ? "Generator jest wyłączony" : "Generuj Serwer przez AI 🚀";
 }
 function renderStatus() {
   const pill = $("status-pill");
-  const off = svc.state === "off" || svc.state === "down";
+  const off = svcBlocked();
+  const bp = svc.state === "off" && !off;
   pill.className = "status-pill " + (svc.state === "load" ? "load" : off ? "bad" : "ok");
-  $("status-text").textContent = svc.state === "load" ? "Sprawdzam…" : off ? "Wyłączony" : "Online";
+  $("status-text").textContent = svc.state === "load" ? "Sprawdzam…" : off ? "Wyłączony" : bp ? "Tryb admina" : "Online";
   const b = $("svc-banner");
-  b.textContent = off ? (svc.message || "Generator jest wyłączony.") : "";
-  b.classList.toggle("hidden", !off);
+  if (bp) {
+    const t = new Date(svc.bypassUntil).toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" });
+    b.textContent = "Tryb administratora: generator jest wyłączony dla innych, ale działa dla Ciebie do " + t + ".";
+  } else {
+    b.textContent = off ? (svc.message || "Generator jest wyłączony.") : "";
+  }
+  b.classList.toggle("bad", !bp);
+  b.classList.toggle("info", bp);
+  b.classList.toggle("hidden", !off && !bp);
+  const a = $("ann-banner");
+  a.textContent = svc.announcement || "";
+  a.classList.toggle("hidden", !svc.announcement);
+  const ow = document.querySelector(".opt");
+  if (ow) ow.classList.toggle("hidden", !svc.allowClean);
+  if (!svc.allowClean) { $("opt-clean").checked = false; $("opt-warn").classList.add("hidden"); }
+  $("prompt").maxLength = svc.maxPrompt;
+  $("maxp").textContent = svc.maxPrompt;
   refreshGen();
 }
 async function loadStatus() {
   if (!API_READY) return;
   try {
-    const res = await fetch(API_URL + "/api/status", { cache: "no-store" });
+    const bp = bypassInfo();
+    const res = await fetch(API_URL + "/api/status" + (bp ? "?b=" + encodeURIComponent(bp.token) : ""), { cache: "no-store" });
     const j = await res.json();
-    if (j && j.ok) { svc.state = j.state; svc.message = j.message || ""; renderStatus(); }
+    if (j && j.ok) {
+      svc.state = j.state; svc.message = j.message || "";
+      svc.bypassUntil = j.bypassUntil || 0; svc.announcement = j.announcement || "";
+      svc.allowClean = j.allowClean !== false; svc.maxPrompt = j.maxPrompt || 800;
+      renderStatus();
+    }
   } catch (e) { /* bez statusu strona działa jak dotąd – błąd pokaże się po kliknięciu */ }
 }
 
@@ -880,7 +1024,8 @@ async function generate() {
   ackReceived = false;
   addLogLine("Rezerwuję bota…");
   try {
-    const st = await postJson("/api/start", { prompt, redirect: mainUrl(), clean: flow.clean });
+    const bp = bypassInfo();
+    const st = await postJson("/api/start", { prompt, redirect: mainUrl(), clean: flow.clean && svc.allowClean, bypass: bp ? bp.token : undefined });
     flow.job = st.job;
     saveFlow();
     $("invite-btn").href = st.inviteUrl;
@@ -1044,12 +1189,39 @@ async function initReturn() {
 
 /* ================================ ADMIN ================================ */
 const TOKEN_KEY = "aidg_admin_token";
-const AUTO_KEY = "aidg_admin_auto";
+const BYPASS_KEY = "aidg_bypass";
 const getToken = () => { try { return sessionStorage.getItem(TOKEN_KEY); } catch (e) { return null; } };
 const setToken = (t) => { try { t ? sessionStorage.setItem(TOKEN_KEY, t) : sessionStorage.removeItem(TOKEN_KEY); } catch (e) {} };
+const sessionEnd = () => Number((getToken() || "").split(".")[0]) || 0;
 
-const state = { tokens: [], health: {}, paused: false, limit: 10 };
-let autoTimer = null;
+const state = { tokens: [], health: {}, paused: false, limit: 10, stats: null, config: null, settings: {}, sessionMs: 3600000 };
+let currentPage = "home";
+let sessTimer = null;
+let labResult = null;
+
+const ICONS = {
+  home: '<path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',
+  key: '<path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>',
+  chart: '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+  flask: '<path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2.2h12.4a1.5 1.5 0 0 0 1.3-2.2L14 9V3"/><line x1="7.5" y1="14" x2="16.5" y2="14"/>',
+  sliders: '<line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>',
+  out: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+  ext: '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>',
+};
+function svgIcon(name) {
+  const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  s.setAttribute("viewBox", "0 0 24 24");
+  s.setAttribute("aria-hidden", "true");
+  s.innerHTML = ICONS[name]; // stałe, własne ikony
+  return s;
+}
+const PAGES = [
+  { id: "home", label: "Strona główna", icon: "home" },
+  { id: "tokens", label: "Tokeny", icon: "key" },
+  { id: "stats", label: "Statystyki", icon: "chart" },
+  { id: "lab", label: "Laboratorium AI", icon: "flask" },
+  { id: "settings", label: "Ustawienia", icon: "sliders" },
+];
 
 async function adminApi(path, method, body) {
   const headers = { Authorization: "Bearer " + (getToken() || "") };
@@ -1059,10 +1231,8 @@ async function adminApi(path, method, body) {
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
-  if (res.status === 401) {
-    setToken(null);
-    stopAuto();
-    showLogin();
+  if (res.status === 401 && path !== "/api/admin/login") {
+    logout("Sesja wygasła – zaloguj się ponownie.");
     throw new Error("Sesja wygasła – zaloguj się ponownie.");
   }
   const j = await res.json().catch(() => null);
@@ -1070,53 +1240,132 @@ async function adminApi(path, method, body) {
   return j;
 }
 
+/* ---- logowanie / wylogowanie / sesja ---- */
 function showLogin() {
-  $("view-admin").classList.add("hidden");
+  ["view-admin", "adm-bar"].forEach((id) => $(id).classList.add("hidden"));
+  closeDrawer();
   $("view-login").classList.remove("hidden");
   $("code").value = "";
   $("code").focus();
 }
 
-function stopAuto() {
-  if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+function logout(msg) {
+  setToken(null);
+  if (sessTimer) { clearInterval(sessTimer); sessTimer = null; }
+  showLogin();
+  if (msg) toast(msg, "bad");
 }
-function startAuto() {
-  stopAuto();
-  autoTimer = setInterval(() => {
-    if (!document.hidden && getToken()) loadDashboard().catch(() => {});
-  }, 30000);
+
+function fmtLeft(ms) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  const p = (n) => String(n).padStart(2, "0");
+  return p(Math.floor(s / 3600)) + ":" + p(Math.floor((s % 3600) / 60)) + ":" + p(s % 60);
+}
+
+function tickSession() {
+  const end = sessionEnd();
+  const left = end - Date.now();
+  if (!end || left <= 0) { logout("Sesja wygasła – zaloguj się ponownie."); return; }
+  $("sess-left").textContent = fmtLeft(left);
+  const fill = Math.max(0, Math.min(100, (left / state.sessionMs) * 100));
+  $("sess-fill").style.width = fill + "%";
+  $("sess-fill").parentNode.classList.toggle("low", left < 5 * 60000);
+  $("sess-note").textContent = "Wygasa o " + new Date(end).toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" });
+}
+
+function enterAdmin() {
+  $("view-login").classList.add("hidden");
+  $("view-admin").classList.remove("hidden");
+  $("adm-bar").classList.remove("hidden");
+  if (sessTimer) clearInterval(sessTimer);
+  tickSession();
+  sessTimer = setInterval(tickSession, 1000);
+  goPage("home", true);
+  loadDashboard().catch((e) => toast(e.message, "bad"));
+}
+
+/* ---- menu (3 kreski) i strony ---- */
+function openDrawer() {
+  $("drawer").classList.add("open");
+  $("scrim").classList.add("open");
+  $("hamb").classList.add("open");
+  $("drawer").setAttribute("aria-hidden", "false");
+}
+function closeDrawer() {
+  $("drawer").classList.remove("open");
+  $("scrim").classList.remove("open");
+  $("hamb").classList.remove("open");
+  $("drawer").setAttribute("aria-hidden", "true");
+}
+
+function goPage(id, silent) {
+  currentPage = id;
+  PAGES.forEach((p) => {
+    const sec = $("pg-" + p.id);
+    const on = p.id === id;
+    if (on) { sec.classList.remove("hidden"); sec.style.animation = "none"; void sec.offsetWidth; sec.style.animation = ""; }
+    else sec.classList.add("hidden");
+  });
+  document.querySelectorAll("#dr-nav .nav-item").forEach((b) => b.classList.toggle("active", b.dataset.page === id));
+  $("adm-page").textContent = PAGES.find((p) => p.id === id).label;
+  closeDrawer();
+  if (!silent) window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function buildNav() {
+  const nav = $("dr-nav");
+  nav.textContent = "";
+  PAGES.forEach((p) => {
+    const b = el("button", "nav-item");
+    b.dataset.page = p.id;
+    b.appendChild(svgIcon(p.icon));
+    b.appendChild(el("span", "", p.label));
+    b.addEventListener("click", () => goPage(p.id));
+    nav.appendChild(b);
+  });
+  const site = el("a", "nav-item");
+  site.href = mainUrl();
+  site.target = "_blank";
+  site.rel = "noopener";
+  site.appendChild(svgIcon("ext"));
+  site.appendChild(el("span", "", "Otwórz generator"));
+  nav.appendChild(site);
+  const lo = $("btn-logout");
+  lo.textContent = "";
+  lo.appendChild(svgIcon("out"));
+  lo.appendChild(el("span", "", "Wyloguj"));
 }
 
 function initAdmin() {
   document.title = "Panel admina";
   $("redir").textContent = mainUrl();
+  $("open-site").href = mainUrl();
+  buildNav();
+  $("hamb").addEventListener("click", () => ($("drawer").classList.contains("open") ? closeDrawer() : openDrawer()));
+  $("scrim").addEventListener("click", closeDrawer);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDrawer(); });
+  $("btn-logout").addEventListener("click", () => logout());
   $("copy-redir").addEventListener("click", async () => {
     const ok = await copyText(mainUrl());
     toast(ok ? "Adres skopiowany" : "Nie udało się skopiować – zaznacz go ręcznie", ok ? "ok" : "bad");
   });
   $("login-btn").addEventListener("click", doLogin);
   $("code").addEventListener("keydown", (e) => { if (e.key === "Enter") doLogin(); });
-  $("btn-logout").addEventListener("click", () => { setToken(null); stopAuto(); showLogin(); });
   $("btn-refresh").addEventListener("click", () => loadDashboard().then(() => toast("Odświeżono", "ok")).catch((e) => toast(e.message, "bad")));
   $("btn-health").addEventListener("click", () => runHealth(null));
   $("btn-cleanup").addEventListener("click", runCleanup);
   $("btn-reset").addEventListener("click", runReset);
   $("btn-pause").addEventListener("click", togglePause);
-  let auto = false;
-  try { auto = localStorage.getItem(AUTO_KEY) === "1"; } catch (e) {}
-  $("auto").checked = auto;
-  $("auto").addEventListener("change", () => {
-    try { localStorage.setItem(AUTO_KEY, $("auto").checked ? "1" : "0"); } catch (e) {}
-    if ($("auto").checked) startAuto(); else stopAuto();
+  $("btn-bypass").addEventListener("click", startBypass);
+  $("btn-export").addEventListener("click", exportStats);
+  $("set-save").addEventListener("click", saveSettings);
+  $("lab-run").addEventListener("click", runLab);
+  $("lab-copy").addEventListener("click", async () => {
+    const ok = labResult ? await copyText(JSON.stringify(labResult, null, 2)) : false;
+    toast(ok ? "JSON skopiowany" : "Nie udało się skopiować", ok ? "ok" : "bad");
   });
-  if (getToken()) {
-    $("view-admin").classList.remove("hidden");
-    loadDashboard().catch((e) => toast(e.message, "bad"));
-    if (auto) startAuto();
-  } else {
-    $("view-login").classList.remove("hidden");
-    $("code").focus();
-  }
+  if (getToken() && sessionEnd() > Date.now()) enterAdmin();
+  else { setToken(null); showLogin(); }
 }
 
 async function doLogin() {
@@ -1133,10 +1382,7 @@ async function doLogin() {
     const j = await res.json().catch(() => ({}));
     if (!res.ok || !j.token) throw new Error(j.error || "Logowanie nieudane.");
     setToken(j.token);
-    $("view-login").classList.add("hidden");
-    $("view-admin").classList.remove("hidden");
-    await loadDashboard();
-    if ($("auto").checked) startAuto();
+    enterAdmin();
   } catch (e) {
     err.textContent = e.message;
     err.classList.remove("hidden");
@@ -1145,6 +1391,7 @@ async function doLogin() {
   }
 }
 
+/* ---- pomocnicze ---- */
 function ago(iso) {
   if (!iso) return "nigdy";
   const s = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
@@ -1167,13 +1414,55 @@ function statBox(icon, value, label, color) {
   return b;
 }
 
+const getBypass = () => {
+  try {
+    const v = JSON.parse(localStorage.getItem(BYPASS_KEY) || "null");
+    return v && v.token && v.until > Date.now() ? v : null;
+  } catch (e) { return null; }
+};
+
+/* ---- przełącznik generatora i przepustka 30 min ---- */
 function renderPause() {
   const st = $("pause-state");
-  st.className = "pill " + (state.paused ? "bad" : "ok");
-  st.textContent = state.paused ? "Wyłączony" : "Włączony";
+  st.className = "status-pill " + (state.paused ? "bad" : "ok");
+  st.innerHTML = "";
+  st.appendChild(el("i", "live"));
+  st.appendChild(document.createTextNode(state.paused ? "Generator wyłączony" : "Generator włączony"));
   const b = $("btn-pause");
-  b.textContent = state.paused ? "⏻ Włącz generator" : "⏻ Wyłącz generator";
+  b.textContent = state.paused ? "Włącz generator" : "Wyłącz generator";
   b.className = state.paused ? "good" : "danger";
+
+  const bp = getBypass();
+  const btn = $("btn-bypass");
+  const info = $("bypass-info");
+  btn.classList.toggle("hidden", !(state.paused && !bp));
+  info.classList.toggle("hidden", !(state.paused && bp));
+  info.textContent = "";
+  if (state.paused && bp) {
+    const t = new Date(bp.until).toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" });
+    info.appendChild(document.createTextNode("Przepustka aktywna do " + t + ". W tej przeglądarce generator działa dla Ciebie, inni nadal widzą, że jest wyłączony. "));
+    const end = el("button", "small ghost", "Zakończ");
+    end.style.marginTop = "6px";
+    end.addEventListener("click", () => { try { localStorage.removeItem(BYPASS_KEY); } catch (e) {} renderPause(); toast("Przepustka zakończona", "ok"); });
+    info.appendChild(document.createElement("br"));
+    info.appendChild(end);
+  }
+}
+
+async function startBypass() {
+  const b = $("btn-bypass");
+  b.disabled = true;
+  try {
+    const j = await adminApi("/api/admin/bypass", "POST", { minutes: 30 });
+    if (!j.ok) throw new Error(j.error || "Błąd.");
+    try { localStorage.setItem(BYPASS_KEY, JSON.stringify({ token: j.token, until: j.until })); } catch (e) { throw new Error("Przeglądarka blokuje zapis (localStorage)."); }
+    renderPause();
+    toast("Generator włączony dla Ciebie na 30 min", "ok");
+  } catch (e) {
+    toast(e.message, "bad");
+  } finally {
+    b.disabled = false;
+  }
 }
 
 function renderBanners(c) {
@@ -1181,12 +1470,13 @@ function renderBanners(c) {
   box.textContent = "";
   const add = (cls, text) => box.appendChild(el("div", "banner " + cls, text));
   if (!API_READY) add("bad", "API_URL w index.html nie jest ustawiony.");
-  if (!c.kv) add("", "Brak podpiętego KV (zmienna STATS): limity godzinowe, statystyki i wyłączenia tokenów działają tylko w pamięci jednej instancji (mniej dokładnie). Dodaj KV w ustawieniach Workera.");
+  if (!c.kv) add("", "Brak podpiętego KV (zmienna STATS): limity godzinowe, statystyki, ustawienia i wyłączenia tokenów działają tylko w pamięci jednej instancji. Dodaj KV w ustawieniach Workera.");
   if (c.activeGroq === 0) add("bad", "Brak aktywnych kluczy Groq – generator nie zadziała.");
   if (c.activeBots === 0) add("bad", "Brak aktywnych botów Discord – generator nie zadziała.");
   if (state.paused) add("bad", "Generator jest wyłączony – odwiedzający widzą komunikat i nie mogą kliknąć Generuj.");
 }
 
+/* ---- tokeny ---- */
 function renderTokens(tokens) {
   const draw = (target, rows, isBot) => {
     const box = $(target);
@@ -1246,7 +1536,7 @@ function renderTokens(tokens) {
         if (isBot && h.public !== undefined) mt.appendChild(el("span", "m " + (h.public ? "g" : "r"), h.public ? "publiczny" : "NIE publiczny"));
         if (isBot && h.codeGrant) mt.appendChild(el("span", "m r", "włączony Code Grant (wyłącz)"));
         if (isBot && h.guilds !== undefined) mt.appendChild(el("span", "m", "serwery: " + h.guilds));
-        if (!isBot && h.hasModel !== undefined) mt.appendChild(el("span", "m " + (h.hasModel ? "g" : "w"), h.hasModel ? "ma model z CONFIG" : "brak modelu z CONFIG (użyje zapasowego)"));
+        if (!isBot && h.hasModel !== undefined) mt.appendChild(el("span", "m " + (h.hasModel ? "g" : "r"), h.hasModel ? "ma model z CONFIG" : "brak modelu z CONFIG"));
       }
       card.appendChild(mt);
       if (r.err) card.appendChild(el("div", "tok-err", "Ostatni błąd: " + r.err));
@@ -1261,33 +1551,8 @@ function renderTokens(tokens) {
   $("bot-sum").textContent = b.filter((x) => x.enabled).length + " / " + b.length + " aktywnych";
 }
 
-async function loadDashboard() {
-  const j = await adminApi("/api/admin/stats");
-  if (!j.ok) throw new Error(j.error || "Błąd pobierania danych.");
-  const s = j.stats;
-  const c = j.config;
-  state.paused = !!j.paused;
-  state.tokens = j.tokens || [];
-  state.limit = c.hourlyLimit;
-
-  const grid = $("stat-grid");
-  grid.textContent = "";
-  statIdx = 0;
-  const rate = s.ok + s.fail ? Math.round((s.ok / (s.ok + s.fail)) * 100) + "%" : "–";
-  grid.appendChild(statBox("🚀", s.total, "Rozpoczęte generacje", "#5865F2"));
-  grid.appendChild(statBox("✅", s.ok, "Zbudowane serwery", "#23a55a"));
-  grid.appendChild(statBox("⚠️", s.fail, "Nieudane / odrzucone", "#f23f43"));
-  grid.appendChild(statBox("📈", rate, "Skuteczność", "#f0b232"));
-  grid.appendChild(statBox("🏗️", c.activeBots * c.hourlyLimit, "Pojemność (serwerów / godz.)", "#00a8fc"));
-  grid.appendChild(statBox("🔁", s.groqFailovers + s.discordFailovers, "Przełączeń (Groq + boty)", "#b5bac1"));
-
-  $("stat-note").textContent =
-    "Modele: " + (c.models || []).join(" → ") + " · limit: " + c.hourlyLimit + " serwerów / bot / godz. · czas na dodanie bota: " + c.jobTtl + " min" +
-    (c.kv ? " · statystyki zapisywane zbiorczo (wartości przybliżone)" : "");
-
-  renderBanners(c);
-  renderPause();
-
+/* ---- wykres 14 dni, statystyki, zdarzenia, ustawienia ---- */
+function renderChart(s) {
   const days = [];
   for (let i = 13; i >= 0; i--) {
     const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
@@ -1300,21 +1565,52 @@ async function loadDashboard() {
     const col = el("div", "barcol");
     const bar = el("div", "bar" + (idx === days.length - 1 ? " today" : ""));
     bar.style.height = Math.max(2, Math.round((v / max) * 88)) + "px";
+    bar.style.animationDelay = idx * 30 + "ms";
     bar.title = d + ": " + v;
     if (v) bar.appendChild(el("b", "", String(v)));
     col.appendChild(bar);
     col.appendChild(el("div", "barlbl", d.slice(8)));
     bars.appendChild(col);
   });
+}
 
-  renderTokens(state.tokens);
+function renderStats(s, c) {
+  const rate = s.ok + s.fail ? Math.round((s.ok / (s.ok + s.fail)) * 100) + "%" : "–";
+  statIdx = 0;
+  const mini = $("stat-mini");
+  mini.textContent = "";
+  mini.appendChild(statBox("🚀", s.total, "Rozpoczęte generacje", "#5865F2"));
+  mini.appendChild(statBox("✅", s.ok, "Zbudowane serwery", "#23a55a"));
+  mini.appendChild(statBox("⚠️", s.fail, "Nieudane / odrzucone", "#f23f43"));
+  mini.appendChild(statBox("📈", rate, "Skuteczność", "#f0b232"));
 
+  const grid = $("stat-grid");
+  grid.textContent = "";
+  statIdx = 0;
+  const today = new Date().toISOString().slice(0, 10);
+  const week = Object.entries(s.days || {}).filter(([d]) => Date.now() - Date.parse(d) < 7 * 86400000).reduce((a, [, v]) => a + v, 0);
+  grid.appendChild(statBox("🚀", s.total, "Rozpoczęte generacje", "#5865F2"));
+  grid.appendChild(statBox("✅", s.ok, "Zbudowane serwery", "#23a55a"));
+  grid.appendChild(statBox("⚠️", s.fail, "Nieudane / odrzucone", "#f23f43"));
+  grid.appendChild(statBox("📈", rate, "Skuteczność", "#f0b232"));
+  grid.appendChild(statBox("📅", (s.days && s.days[today]) || 0, "Dzisiaj", "#00a8fc"));
+  grid.appendChild(statBox("🗓️", week, "Ostatnie 7 dni", "#9aa4ff"));
+  grid.appendChild(statBox("🏗️", c.activeBots * c.hourlyLimit, "Pojemność (serwerów / godz.)", "#23a55a"));
+  grid.appendChild(statBox("🔁", s.groqFailovers + s.discordFailovers, "Przełączeń (Groq + boty)", "#b5bac1"));
+
+  $("stat-note").textContent =
+    "Model: " + (c.models || []).join(" → ") + " · limit: " + c.hourlyLimit + " serwerów / bot / godz. · czas na dodanie bota: " + c.jobTtl + " min" +
+    (c.kv ? " · statystyki zapisywane zbiorczo (wartości przybliżone)" : "");
+}
+
+function renderEvents(s) {
   const list = $("log-list");
   list.textContent = "";
   const log = s.log || [];
   if (!log.length) list.appendChild(el("div", "empty", "Brak zdarzeń."));
-  log.forEach((e) => {
+  log.forEach((e, i) => {
     const it = el("div", "ev");
+    it.style.animationDelay = Math.min(i, 12) * 25 + "ms";
     const top = el("div", "ev-top");
     top.appendChild(pill(e.ok ? "ok" : "bad", e.ok ? "OK" : "BŁĄD"));
     top.appendChild(pill("ai", e.kind === "build" ? "BUDOWA" : "AI"));
@@ -1325,6 +1621,51 @@ async function loadDashboard() {
     if (e.error) it.appendChild(el("div", "ev-err", e.error));
     list.appendChild(it);
   });
+}
+
+function renderSettings(c, st) {
+  $("set-ann").value = st.announcement || "";
+  $("set-off").value = st.offMessage || "";
+  $("set-hourly").value = st.botHourly || "";
+  $("set-rate").value = st.ratePerMin || "";
+  $("set-maxp").value = st.maxPrompt || "";
+  $("set-clean").checked = st.allowClean !== false;
+  const info = $("sys-info");
+  info.textContent = "";
+  const row = (k, v) => { const d = el("div"); d.appendChild(el("span", "", k)); d.appendChild(el("span", "", String(v))); info.appendChild(d); };
+  row("Wersja Workera", c.version || "?");
+  row("Model AI", (c.models || []).join(", "));
+  row("Klucze Groq", c.activeGroq + " / " + c.groqKeys + " aktywnych");
+  row("Boty Discord", c.activeBots + " / " + c.bots + " aktywnych");
+  row("Limit godzinowy / bota", c.hourlyLimit);
+  row("Limit startów / min / IP", c.ratePerMin);
+  row("Maks. znaków opisu", c.maxPrompt);
+  row("Uprawnienia bota", c.permissions === "8" ? "Administrator (8)" : c.permissions);
+  row("Czas na dodanie bota", c.jobTtl + " min");
+  row("Sesja admina", c.sessionHours + " h");
+  row("Pamięć KV (STATS)", c.kv ? "podpięta" : "brak");
+}
+
+async function loadDashboard() {
+  const j = await adminApi("/api/admin/stats");
+  if (!j.ok) throw new Error(j.error || "Błąd pobierania danych.");
+  const s = j.stats;
+  const c = j.config;
+  state.stats = s;
+  state.config = c;
+  state.settings = j.settings || {};
+  state.paused = !!j.paused;
+  state.tokens = j.tokens || [];
+  state.limit = c.hourlyLimit;
+  state.sessionMs = (c.sessionHours || 1) * 3600000;
+  renderStats(s, c);
+  renderBanners(c);
+  renderPause();
+  renderChart(s);
+  renderTokens(state.tokens);
+  renderEvents(s);
+  renderSettings(c, state.settings);
+  tickSession();
 }
 
 async function togglePause() {
@@ -1341,6 +1682,100 @@ async function togglePause() {
   } finally {
     b.disabled = false;
   }
+}
+
+async function saveSettings() {
+  const b = $("set-save");
+  b.disabled = true;
+  try {
+    const body = {
+      announcement: $("set-ann").value,
+      offMessage: $("set-off").value,
+      botHourly: $("set-hourly").value,
+      ratePerMin: $("set-rate").value,
+      maxPrompt: $("set-maxp").value,
+      allowClean: $("set-clean").checked,
+    };
+    const j = await adminApi("/api/admin/settings", "POST", body);
+    if (!j.ok) throw new Error(j.error || "Błąd.");
+    toast(j.kvSaved ? "Ustawienia zapisane" : "Zapisane tylko w pamięci – podepnij KV, żeby były trwałe", j.kvSaved ? "ok" : "bad");
+    await loadDashboard();
+  } catch (e) {
+    toast(e.message, "bad");
+  } finally {
+    b.disabled = false;
+  }
+}
+
+/* ---- laboratorium AI ---- */
+const PERM_PL = { ADMINISTRATOR: "Administrator" };
+function renderLab(structure) {
+  labResult = structure;
+  $("lab-card").classList.remove("hidden");
+  const tree = $("lab-tree");
+  tree.textContent = "";
+  let n = 0;
+  structure.categories.forEach((cat) => {
+    const box = el("div", "cat");
+    box.appendChild(el("div", "cat-name", cat.name + (cat.overwrites && cat.overwrites.length ? " 🔒" : "")));
+    cat.channels.forEach((ch) => {
+      const row = el("div", "chan");
+      row.style.setProperty("--i", Math.min(n++, 40));
+      row.appendChild(el("span", "ic", ch.type === 2 ? "🔊" : "#"));
+      row.appendChild(document.createTextNode(ch.name));
+      if (ch.topic) row.appendChild(el("span", "topic", ch.topic));
+      box.appendChild(row);
+    });
+    tree.appendChild(box);
+  });
+  const roles = $("lab-roles");
+  roles.textContent = "";
+  structure.roles.forEach((r, i) => {
+    const chip = el("span", "role");
+    chip.style.setProperty("--i", Math.min(i, 20));
+    const dot = el("span", "dot");
+    dot.style.background = r.color ? "#" + r.color.toString(16).padStart(6, "0") : "#99aab5";
+    chip.appendChild(dot);
+    chip.appendChild(document.createTextNode(r.name));
+    const perms = (r.permissions || []).length;
+    if (perms) chip.appendChild(el("span", "perm", (r.permissions.includes("ADMINISTRATOR") ? "★ admin" : perms + " upr.")));
+    roles.appendChild(chip);
+  });
+}
+
+async function runLab() {
+  const prompt = $("lab-prompt").value.trim();
+  if (prompt.length < 5) { toast("Opisz serwer dokładniej (min. 5 znaków)", "bad"); return; }
+  const b = $("lab-run");
+  b.disabled = true;
+  b.textContent = "AI projektuje…";
+  $("lab-meta").textContent = "";
+  try {
+    const j = await adminApi("/api/admin/preview", "POST", { prompt });
+    if (!j.ok) throw new Error(j.error || "Błąd AI.");
+    $("lab-title").textContent = j.structure.serverName + " · " + (j.ms / 1000).toFixed(1) + " s";
+    renderLab(j.structure);
+    $("lab-meta").textContent = j.structure.categories.length + " kategorii · " + j.structure.roles.length + " ról";
+    loadDashboard().catch(() => {});
+  } catch (e) {
+    toast(e.message, "bad");
+  } finally {
+    b.disabled = false;
+    b.textContent = "Zaprojektuj";
+  }
+}
+
+function exportStats() {
+  if (!state.stats) { toast("Brak danych – odśwież panel", "bad"); return; }
+  const data = { exportedAt: new Date().toISOString(), stats: state.stats, tokens: state.tokens, settings: state.settings };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "statystyki-generatora.json";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  toast("Statystyki pobrane", "ok");
 }
 
 /* Test tokenów w paczkach (limit zapytań Workera): Groq po 10, boty po 20. */
