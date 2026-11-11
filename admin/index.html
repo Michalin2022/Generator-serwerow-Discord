@@ -1,0 +1,2390 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1e1f22">
+<title>AI Discord Server Generator</title>
+<style>
+  :root {
+    --bg: #313338; --side: #2b2d31; --dark: #1e1f22; --float: #111214; --accent: #5865F2; --accent-h: #4752c4;
+    --text: #dbdee1; --muted: #949ba4; --ok: #23a55a; --bad: #f23f43; --warn: #f0b232;
+    --line: #3f4147; --hover: #35373c; --ease: cubic-bezier(.2, .8, .2, 1);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font-family: "gg sans", "Noto Sans", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; }
+  body { min-height: 100vh; -webkit-text-size-adjust: 100%; display: flex; flex-direction: column; }
+  ::selection { background: rgba(88,101,242,.45); }
+  ::-webkit-scrollbar { width: 14px; height: 14px; }
+  ::-webkit-scrollbar-thumb { background: #1a1b1e; border: 3px solid var(--bg); border-radius: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  a { color: #00a8fc; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 24px 16px 56px; width: 100%; flex: 1; }
+  h1 { font-size: 30px; margin: 0 0 8px; color: #fff; letter-spacing: -.01em; }
+  h2 { font-size: 17px; margin: 0 0 12px; color: #fff; }
+  .sub { color: #b5bac1; margin: 0 0 24px; line-height: 1.55; font-size: 16px; }
+  .card { background: var(--side); border-radius: 12px; padding: 20px; margin-bottom: 16px;
+    box-shadow: 0 1px 0 rgba(0,0,0,.2); animation: rise .5s var(--ease) both; }
+  textarea, input {
+    width: 100%; background: var(--dark); color: var(--text); border: 1px solid transparent;
+    border-radius: 8px; padding: 12px 14px; font: inherit; outline: none; resize: vertical;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  textarea { min-height: 120px; line-height: 1.5; }
+  textarea:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(88,101,242,.22); }
+  .row { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-top: 10px; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .hidden { display: none !important; }
+
+  /* ---------- przyciski (jak w Discordzie) ---------- */
+  button, .btn {
+    position: relative; overflow: hidden; background: var(--accent); color: #fff; border: 0; border-radius: 8px;
+    padding: 12px 20px; font: inherit; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block;
+    transition: background .17s, transform .12s var(--ease), box-shadow .2s, opacity .15s; -webkit-tap-highlight-color: transparent;
+  }
+  button:hover, .btn:hover { background: var(--accent-h); text-decoration: none; }
+  button:active, .btn:active { transform: scale(.97); }
+  button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+  button:focus-visible, .btn:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  button.ghost { background: #4e5058; }
+  button.ghost:hover { background: #6d6f78; }
+  button.danger { background: var(--bad); }
+  button.danger:hover { background: #c93235; }
+  button.good { background: var(--ok); }
+  button.good:hover { background: #1c8548; }
+  button.small { padding: 7px 12px; font-size: 13px; border-radius: 6px; }
+  .big { display: block; text-align: center; font-size: 19px; padding: 18px 24px; margin-top: 14px; }
+  #gen:not(:disabled):hover, .btn.big:hover { box-shadow: 0 8px 22px rgba(88,101,242,.45); transform: translateY(-1px); }
+  #gen:not(:disabled)::after, .btn.big::after {
+    content: ""; position: absolute; top: 0; left: -60%; width: 40%; height: 100%;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,.28), transparent); transform: skewX(-20deg);
+    transition: left .6s var(--ease); pointer-events: none;
+  }
+  #gen:not(:disabled):hover::after, .btn.big:hover::after { left: 130%; }
+  .ripple { position: absolute; border-radius: 50%; background: rgba(255,255,255,.35); transform: scale(0);
+    animation: ripple .6s ease-out forwards; pointer-events: none; }
+  @keyframes ripple { to { transform: scale(1); opacity: 0; } }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .chip { background: var(--dark); color: var(--muted); border-radius: 999px; padding: 6px 12px;
+    font-size: 13px; cursor: pointer; border: 0; font-weight: 400; }
+  .chip:hover { color: #fff; background: #3a3c42; transform: translateY(-1px); }
+  .spinner { width: 18px; height: 18px; border: 3px solid #4e5058; border-top-color: var(--accent);
+    border-radius: 50%; animation: spin .8s linear infinite; flex: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slidein { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: none; } }
+  @keyframes pop { from { opacity: 0; transform: scale(.7); } to { opacity: 1; transform: none; } }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 currentColor; } 70% { box-shadow: 0 0 0 7px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+  @keyframes floaty { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-14px) rotate(6deg); } }
+  @keyframes shake { 0%, 100% { transform: none; } 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+
+  /* logi jak wiadomości na czacie */
+  .logs { font-size: 15px; }
+  .logline { display: flex; gap: 10px; align-items: center; padding: 6px 10px; margin: 0 -10px; border-radius: 6px; color: var(--muted);
+    word-break: break-word; animation: slidein .25s var(--ease) both; }
+  .logline:hover { background: rgba(4,4,5,.07); }
+  .logline.last { color: #fff; }
+  .logline.warn { color: var(--warn); }
+  .logline .tick { color: var(--ok); width: 18px; text-align: center; flex: none; font-weight: 700; animation: pop .3s var(--ease); }
+  .error { color: #ff8a8c; margin-top: 10px; line-height: 1.4; animation: shake .4s; }
+  .banner { border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; font-size: 14px; line-height: 1.45;
+    background: rgba(240,178,50,.12); color: var(--warn); border: 1px solid rgba(240,178,50,.3); animation: rise .35s var(--ease) both; }
+  .banner.info { background: rgba(88,101,242,.14); color: #c9cdfb; border-color: rgba(88,101,242,.4); }
+  .banner.bad { background: rgba(242,63,67,.12); color: #ff8a8c; border-color: rgba(242,63,67,.35); }
+  .banner b, .banner code { color: #fff; }
+  code { background: var(--dark); border-radius: 4px; padding: 1px 6px; font-size: 12px; word-break: break-all; }
+
+  .opt { display: flex; align-items: center; gap: 10px; margin-top: 14px; color: #b5bac1; font-size: 14px; cursor: pointer; user-select: none; }
+  .opt input { width: 18px; height: 18px; accent-color: var(--accent); flex: none; padding: 0; }
+  .opt-warn { margin-top: 8px; font-size: 13px; color: #ff8a8c; line-height: 1.4; animation: rise .3s var(--ease); }
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 6px; border-radius: 4px; margin-left: 8px; background: var(--side); color: var(--muted); vertical-align: middle; }
+  .tag.lock { color: var(--warn); } .tag.ro { color: #9aa4ff; } .tag.nsfw { color: #ff6b6e; }
+  .role .star { color: var(--warn); font-weight: 700; }
+
+  /* ---------- pasek górny (jak nagłówek kanału) ---------- */
+  .topbar { position: sticky; top: 0; z-index: 30; background: rgba(49,51,56,.88); backdrop-filter: blur(10px);
+    border-bottom: 1px solid #1f2023; box-shadow: 0 1px 0 rgba(4,4,5,.2), 0 1.5px 0 rgba(6,6,7,.05); }
+  .tb-in { max-width: 1000px; margin: 0 auto; padding: 0 16px; height: 48px; display: flex; align-items: center; gap: 12px; }
+  .brand { display: flex; align-items: center; gap: 10px; color: #fff; font-weight: 700; text-decoration: none; min-width: 0; }
+  .brand:hover { text-decoration: none; }
+  .logo { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); display: flex; align-items: center;
+    justify-content: center; font-size: 16px; flex: none; transition: border-radius .25s var(--ease), transform .25s var(--ease); }
+  .brand:hover .logo { border-radius: 10px; transform: rotate(-6deg); }
+  .brand .hash { color: var(--muted); font-weight: 400; margin-right: -4px; }
+  .brand span.t { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tb-sp { flex: 1; }
+  .tb-links { display: flex; gap: 4px; }
+  .tb-links a { color: var(--muted); padding: 6px 10px; border-radius: 6px; font-size: 14px; font-weight: 500; display: inline-flex; gap: 6px; align-items: center; transition: background .15s, color .15s; }
+  .tb-links a:hover { background: var(--hover); color: #fff; text-decoration: none; }
+  .tb-links svg { width: 16px; height: 16px; fill: currentColor; }
+  @media (max-width: 640px) { .tb-links a span { display: none; } .brand span.t { max-width: 150px; } }
+
+  .live { width: 8px; height: 8px; border-radius: 50%; background: currentColor; display: inline-block; margin-right: 6px; animation: pulse 2s infinite; }
+  .status-pill { padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; white-space: nowrap; transition: background .3s, color .3s; }
+  .status-pill.ok { background: rgba(35,165,90,.18); color: var(--ok); }
+  .status-pill.bad { background: rgba(242,63,67,.18); color: #ff6b6e; }
+  .status-pill.load { background: rgba(148,155,164,.18); color: var(--muted); }
+
+  /* ---------- hero ---------- */
+  .hero { position: relative; overflow: hidden; border-radius: 16px; padding: 34px 26px; margin-bottom: 18px;
+    background: linear-gradient(135deg, #5865F2 0%, #4752c4 55%, #3b44a8 100%); animation: rise .5s var(--ease) both; }
+  .hero h1 { font-size: 34px; margin: 0 0 8px; }
+  .hero .sub { color: #e3e5ff; margin: 0; max-width: 620px; }
+  .blob { position: absolute; border-radius: 50%; background: rgba(255,255,255,.1); animation: floaty 7s ease-in-out infinite; pointer-events: none; }
+  .blob.b1 { width: 160px; height: 160px; right: -30px; top: -40px; }
+  .blob.b2 { width: 90px; height: 90px; right: 120px; bottom: -30px; animation-delay: -2s; background: rgba(255,255,255,.07); }
+  .blob.b3 { width: 46px; height: 46px; right: 260px; top: 24px; animation-delay: -4s; }
+  .hero .row { margin-top: 16px; justify-content: flex-start; position: relative; }
+  .hero .status-pill { background: rgba(0,0,0,.25); }
+  .hero .status-pill.ok { color: #7ef0ad; } .hero .status-pill.bad { color: #ffb0b2; }
+  @media (max-width: 640px) { .hero { padding: 24px 18px; } .hero h1 { font-size: 26px; } }
+
+  /* kroki dodawania bota */
+  .steps { margin: 0 0 6px; padding-left: 20px; color: #b5bac1; line-height: 1.65; }
+  .waiting { display: flex; align-items: center; gap: 10px; margin-top: 14px; color: var(--muted); font-size: 14px; }
+
+  /* podgląd serwera */
+  .tree { background: var(--dark); border-radius: 10px; padding: 14px; font-size: 15px; }
+  .cat { margin-bottom: 12px; }
+  .cat-name { color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
+  .chan { padding: 4px 8px 4px 14px; margin: 1px 0; border-radius: 6px; color: #80848e; word-break: break-word;
+    animation: slidein .3s var(--ease) both; animation-delay: calc(var(--i, 0) * 30ms); transition: background .12s, color .12s; }
+  .chan:hover { background: var(--hover); color: #dbdee1; }
+  .chan .ic { color: var(--muted); display: inline-block; width: 20px; }
+  .chan .topic { color: var(--muted); font-size: 12px; margin-left: 8px; }
+  .roles { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .role { display: inline-flex; align-items: center; gap: 6px; background: var(--dark); border-radius: 6px; padding: 4px 10px; font-size: 13px;
+    animation: pop .35s var(--ease) both; animation-delay: calc(var(--i, 0) * 45ms); }
+  .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .done-box { background: rgba(35,165,90,.12); border: 1px solid rgba(35,165,90,.35); color: #7ee2a8;
+    border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; line-height: 1.5; animation: pop .4s var(--ease); }
+  .res-actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+  .res-actions button { flex: 1; min-width: 140px; }
+
+  /* ---------- sekcje informacyjne ---------- */
+  .sect-title { margin: 30px 0 14px; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+  .feat { background: var(--side); border-radius: 12px; padding: 18px; transition: transform .25s var(--ease), background .2s, box-shadow .25s; }
+  .feat:hover { transform: translateY(-4px); background: #2f3136; box-shadow: 0 10px 26px rgba(0,0,0,.28); }
+  .feat .fi { width: 42px; height: 42px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center;
+    font-size: 20px; margin-bottom: 12px; transition: border-radius .25s var(--ease); }
+  .feat:hover .fi { border-radius: 14px; }
+  .feat b { color: #fff; display: block; margin-bottom: 4px; }
+  .feat p { margin: 0; color: #b5bac1; font-size: 14px; line-height: 1.5; }
+  .feat .num { float: right; color: var(--muted); font-weight: 800; font-size: 22px; opacity: .5; }
+  .faq details { background: var(--side); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
+  .faq summary { cursor: pointer; padding: 14px 16px; font-weight: 600; color: #fff; list-style: none; display: flex; justify-content: space-between; gap: 10px; transition: background .15s; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: "+"; color: var(--muted); font-size: 20px; line-height: 1; transition: transform .25s var(--ease); }
+  .faq details[open] summary::after { transform: rotate(45deg); }
+  .faq summary:hover { background: var(--hover); }
+  .faq .ans { padding: 0 16px 14px; color: #b5bac1; line-height: 1.55; font-size: 14px; animation: rise .3s var(--ease); }
+  .js .rv { opacity: 0; transform: translateY(18px); transition: opacity .6s var(--ease), transform .6s var(--ease); transition-delay: calc(var(--d, 0) * 70ms); }
+  .js .rv.in { opacity: 1; transform: none; }
+
+  /* ---------- endbar (stopka) ---------- */
+  .endbar { background: var(--side); border-top: 1px solid #1f2023; margin-top: auto; }
+  .eb-in { max-width: 1000px; margin: 0 auto; padding: 18px 16px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+  .eb-brand { color: var(--muted); font-size: 13px; line-height: 1.5; }
+  .eb-brand b { color: #fff; }
+  .eb-links { display: flex; gap: 8px; flex-wrap: wrap; }
+  .eb-links a { display: inline-flex; align-items: center; gap: 8px; background: var(--dark); color: #dbdee1; padding: 9px 14px; border-radius: 8px;
+    font-size: 14px; font-weight: 600; transition: background .17s, transform .17s var(--ease), color .17s; }
+  .eb-links a:hover { background: var(--accent); color: #fff; transform: translateY(-2px); text-decoration: none; }
+  .eb-links svg { width: 16px; height: 16px; fill: currentColor; }
+
+  /* ================= ADMIN ================= */
+  .login { max-width: 380px; margin: 12vh auto 0; text-align: center; }
+  .login input { text-align: center; letter-spacing: .4em; font-size: 24px; margin: 14px 0; }
+  .adm-title { display: flex; align-items: center; gap: 10px; font-weight: 700; color: #fff; font-size: 17px; }
+  .adm-logo { width: 32px; height: 32px; border-radius: 50%; background: var(--accent);
+    display: flex; align-items: center; justify-content: center; font-size: 17px; }
+  .adm-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .auto { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); cursor: pointer; user-select: none; }
+  .auto input { width: auto; accent-color: var(--accent); }
+  .pill { padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; display: inline-block; }
+  .pill.ok { background: rgba(35,165,90,.18); color: var(--ok); }
+  .pill.bad { background: rgba(242,63,67,.18); color: #ff6b6e; }
+  .pill.off { background: rgba(148,155,164,.18); color: var(--muted); }
+  .pill.warn { background: rgba(240,178,50,.18); color: var(--warn); }
+  .pill.ai { background: rgba(88,101,242,.2); color: #9aa4ff; }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .stat { background: var(--side); border-radius: 12px; padding: 14px 16px; position: relative; overflow: hidden;
+    animation: rise .45s var(--ease) both; animation-delay: calc(var(--i, 0) * 50ms); transition: transform .2s var(--ease); }
+  .stat:hover { transform: translateY(-3px); }
+  .stat::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--c, var(--accent)); }
+  .stat .ico { font-size: 18px; opacity: .9; }
+  .stat b { display: block; font-size: 28px; color: #fff; margin: 4px 0 2px; line-height: 1.1; }
+  .stat span { color: var(--muted); font-size: 12px; }
+
+  .two { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .two .card { margin-bottom: 0; }
+  @media (max-width: 760px) { .two { grid-template-columns: 1fr; } }
+  .bars { display: flex; align-items: flex-end; gap: 5px; height: 130px; padding-top: 18px; }
+  .barcol { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; min-width: 0; }
+  .bar { width: 100%; background: linear-gradient(180deg, #7983f5, var(--accent)); border-radius: 4px 4px 0 0; min-height: 2px; position: relative;
+    transform-origin: bottom; animation: grow .6s var(--ease) both; }
+  @keyframes grow { from { transform: scaleY(0); } to { transform: none; } }
+  .bar.today { background: linear-gradient(180deg, #4ade80, var(--ok)); }
+  .bar b { position: absolute; top: -17px; left: 50%; transform: translateX(-50%); font-size: 11px; color: var(--muted); font-weight: 500; }
+  .barlbl { font-size: 10px; color: var(--muted); margin-top: 5px; }
+  .ctl { display: grid; gap: 10px; }
+  .ctl button { width: 100%; text-align: left; }
+  .ctl .hint { color: var(--muted); font-size: 12px; margin: -4px 0 4px; line-height: 1.4; }
+
+  .sec-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .sec-head h2 { margin: 0; }
+  .toks { display: grid; gap: 10px; }
+  .tok { background: var(--dark); border-radius: 10px; padding: 12px 14px; display: grid; gap: 8px; animation: rise .35s var(--ease) both; transition: opacity .2s; }
+  .tok.off { opacity: .6; }
+  .tok-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .tok-name { display: flex; align-items: center; gap: 10px; font-weight: 600; color: #fff; min-width: 0; }
+  .tok-sub { color: var(--muted); font-weight: 400; font-size: 12px; }
+  .sd { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); flex: none; }
+  .sd.on { background: var(--ok); box-shadow: 0 0 0 3px rgba(35,165,90,.2); }
+  .sd.bad { background: var(--bad); box-shadow: 0 0 0 3px rgba(242,63,67,.2); }
+  .tok-btns { display: flex; gap: 8px; }
+  .metrics { display: flex; gap: 6px; flex-wrap: wrap; }
+  .m { background: var(--side); border-radius: 6px; padding: 3px 8px; font-size: 12px; color: var(--muted); }
+  .m.g { color: var(--ok); } .m.r { color: #ff6b6e; } .m.w { color: var(--warn); }
+  .tok-err { font-size: 12px; color: var(--warn); word-break: break-word; line-height: 1.4; }
+  .empty { color: var(--muted); font-size: 14px; padding: 6px 0; }
+  .setup { color: #b5bac1; font-size: 14px; line-height: 1.6; }
+  .setup ol { margin: 8px 0 0; padding-left: 20px; }
+  .copyrow { display: flex; gap: 8px; align-items: center; margin: 10px 0; }
+  .copyrow code { flex: 1; padding: 9px 10px; font-size: 13px; }
+
+  .evs { display: grid; gap: 8px; }
+  .ev { background: var(--dark); border-radius: 10px; padding: 10px 12px; display: grid; gap: 4px; animation: slidein .3s var(--ease) both; }
+  .ev-top { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+  .ev-prompt { font-size: 14px; word-break: break-word; }
+  .ev-err { font-size: 12px; color: var(--warn); word-break: break-word; }
+
+  .toasts { position: fixed; left: 0; right: 0; bottom: 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 100; pointer-events: none; padding: 0 12px; }
+  .toast { background: var(--float); color: #fff; border-radius: 10px; padding: 11px 16px; font-size: 14px; max-width: 460px;
+    box-shadow: 0 6px 24px rgba(0,0,0,.5); border-left: 4px solid var(--accent); animation: tin .25s var(--ease); }
+  .toast.ok { border-color: var(--ok); } .toast.bad { border-color: var(--bad); }
+  @keyframes tin { from { opacity: 0; transform: translateY(12px) scale(.96); } to { opacity: 1; transform: none; } }
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 90; animation: fadein .15s; }
+  .modal { background: var(--bg); border-radius: 14px; padding: 22px; max-width: 400px; width: 100%; animation: pop .25s var(--ease); }
+  .modal p { margin: 0 0 16px; line-height: 1.5; }
+  .modal .row { justify-content: flex-end; margin: 0; }
+
+  /* ---------- panel admina: pasek, menu (3 kreski), strony ---------- */
+  .adm-bar { position: sticky; top: 0; z-index: 40; background: rgba(30,31,34,.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  .adm-bar-in { max-width: 1000px; margin: 0 auto; padding: 0 12px; height: 52px; display: flex; align-items: center; gap: 10px; }
+  .hamb { width: 40px; height: 40px; padding: 0; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; border-radius: 8px; flex: none; }
+  .hamb:hover { background: var(--hover); }
+  .hamb i { display: block; width: 20px; height: 2px; border-radius: 2px; background: #dbdee1; transition: transform .28s var(--ease), opacity .2s; }
+  .hamb.open i:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .hamb.open i:nth-child(2) { opacity: 0; }
+  .hamb.open i:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  .adm-ttl { font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .adm-ttl .hash { color: var(--muted); font-weight: 400; }
+  #adm-page { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; animation: fadein .25s; }
+  .scrim { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 55; opacity: 0; pointer-events: none; transition: opacity .25s; }
+  .scrim.open { opacity: 1; pointer-events: auto; }
+  .drawer { position: fixed; top: 0; left: 0; bottom: 0; width: 280px; max-width: 86vw; background: var(--side); z-index: 60; transform: translateX(-104%);
+    transition: transform .3s var(--ease); display: flex; flex-direction: column; padding: 14px 10px; box-shadow: 8px 0 30px rgba(0,0,0,.4); }
+  .drawer.open { transform: none; }
+  .dr-head { display: flex; align-items: center; gap: 10px; padding: 4px 8px 14px; border-bottom: 1px solid var(--line); margin-bottom: 10px; color: #fff; font-weight: 700; }
+  .dr-nav { display: grid; gap: 2px; }
+  .nav-item { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: transparent; color: #b5bac1; padding: 10px 12px; border-radius: 8px; font-weight: 600; font-size: 15px; text-decoration: none; }
+  .nav-item:hover { background: var(--hover); color: #fff; text-decoration: none; }
+  .nav-item.active { background: #404249; color: #fff; }
+  .nav-item svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; transition: transform .2s var(--ease); }
+  .nav-item:hover svg { transform: scale(1.12); }
+  .nav-item.logout { color: #ff8a8c; }
+  .nav-item.logout:hover { background: rgba(242,63,67,.14); color: #ff6b6e; }
+  .nav-sp { flex: 1; }
+  .nav-sep { height: 1px; background: var(--line); margin: 8px 4px; }
+  .page { animation: rise .35s var(--ease) both; }
+  .adm-hero h1 { font-size: 28px; }
+  .count { font-variant-numeric: tabular-nums; color: #fff; font-size: 18px; }
+  .sess-bar { height: 6px; border-radius: 4px; background: rgba(0,0,0,.28); margin-top: 12px; overflow: hidden; position: relative; }
+  .sess-bar i { display: block; height: 100%; width: 100%; background: #fff; border-radius: 4px; transition: width 1s linear, background .3s; }
+  .sess-bar.low i { background: #ffb0b2; }
+  .form { display: grid; gap: 14px; }
+  .form label { display: grid; gap: 6px; font-size: 14px; color: #b5bac1; font-weight: 600; }
+  .form label.opt { display: flex; }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+  .kv { display: grid; gap: 6px; font-size: 14px; }
+  .kv div { display: flex; justify-content: space-between; gap: 12px; padding: 8px 10px; background: var(--dark); border-radius: 8px; }
+  .kv span:first-child { color: var(--muted); }
+  .kv span:last-child { color: #fff; text-align: right; word-break: break-word; }
+  .perm { font-size: 11px; color: var(--muted); margin-left: 8px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+    html { scroll-behavior: auto; }
+    .js .rv { opacity: 1; transform: none; }
+  }
+
+  /* ---------- zapisane serwery, udostępnianie, Turnstile ---------- */
+  #ts-box { position: fixed; right: 16px; bottom: 16px; z-index: 70; }
+  .res-tools { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+  .res-tools button { flex: 1; min-width: 140px; }
+  .sv-item { background: var(--dark); border-radius: 10px; margin-top: 8px; overflow: hidden; animation: pop .3s var(--ease) both; }
+  .sv-head { display: flex; align-items: center; gap: 6px; padding: 8px 10px; }
+  .sv-head .ib { background: transparent; color: var(--muted); border: 0; padding: 6px 8px; border-radius: 6px; font-size: 15px; line-height: 1; cursor: pointer; min-width: 0; flex: none; }
+  .sv-head .ib:hover { background: var(--hover); color: #fff; }
+  .sv-head .ib.del:hover { color: #ff6b6e; }
+  .sv-head .ib .arr { display: inline-block; transition: transform .2s var(--ease); }
+  .sv-item.open .ib .arr { transform: rotate(90deg); }
+  .sv-main { flex: 1; min-width: 0; }
+  .sv-name { color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+  .sv-date { color: var(--muted); font-size: 12px; }
+  .sv-main input { width: 100%; }
+  .sv-body { padding: 4px 12px 14px; border-top: 1px solid rgba(255,255,255,.05); }
+  .sv-body .tree { background: var(--side); margin-top: 8px; }
+  .sv-ref { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .sv-ref input { flex: 1; min-width: 180px; }
+  .sv-act { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .sv-act button { flex: 1; min-width: 120px; }
+  .sharebox { display: flex; gap: 8px; margin: 12px 0; }
+  .sharebox input { flex: 1; min-width: 0; }
+
+  /* ---------- logi, laboratorium ---------- */
+  .tools { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+  .tools select, .tools input[type=text] { width: auto; min-width: 120px; }
+  .tools select { background: var(--dark); color: #dbdee1; border: 0; border-radius: 8px; padding: 9px 10px; font: inherit; font-size: 14px; }
+  .tools .grow { flex: 1; min-width: 160px; }
+  .logl { display: grid; gap: 6px; }
+  .lg { background: var(--dark); border-radius: 10px; padding: 8px 10px; display: flex; gap: 8px; align-items: flex-start; border-left: 3px solid transparent; animation: slidein .25s var(--ease) both; }
+  .lg.warn { border-left-color: #f0b232; } .lg.error { border-left-color: #f23f43; } .lg.info { border-left-color: rgba(148,155,164,.35); }
+  .lg .star { background: transparent; border: 0; color: var(--muted); font-size: 18px; line-height: 1; padding: 2px 4px; cursor: pointer; min-width: 0; flex: none; }
+  .lg .star:hover { color: #f0b232; background: transparent; }
+  .lg.starred .star { color: #f0b232; }
+  .lg .lm { flex: 1; min-width: 0; word-break: break-word; font-size: 14px; }
+  .lg .lt { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .lg .tag { margin-right: 6px; }
+  .tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 12px; }
+  .tabs button { background: transparent; color: var(--muted); border: 0; border-radius: 8px; padding: 7px 12px; font-size: 14px; cursor: pointer; min-width: 0; }
+  .tabs button:hover { background: var(--hover); color: #fff; }
+  .tabs button.on { background: var(--accent); color: #fff; }
+  .codebox { background: var(--dark); border-radius: 10px; padding: 12px; font: 12.5px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; word-break: break-word; max-height: 460px; overflow: auto; color: #dbdee1; margin: 0; }
+  .kv { display: grid; gap: 6px; }
+  .kv > div { display: flex; justify-content: space-between; gap: 12px; background: var(--dark); border-radius: 8px; padding: 8px 12px; font-size: 14px; }
+  .kv > div span:first-child { color: var(--muted); }
+  .kv > div span:last-child { text-align: right; word-break: break-word; }
+  .warnlist { margin: 10px 0 0; padding-left: 18px; color: #f0b232; font-size: 14px; }
+</style>
+</head>
+<body>
+<header class="topbar hidden" id="topbar"><div class="tb-in">
+  <a class="brand" href="#"><span class="logo">🤖</span><span class="t"><span class="hash">#</span> AI Discord Generator</span></a>
+  <span class="tb-sp"></span>
+  <span class="status-pill load" id="status-pill"><i class="live"></i><span id="status-text">Sprawdzam…</span></span>
+  <nav class="tb-links">
+    <a data-link="github" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span>GitHub</span></a>
+    <a data-link="tiktok" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg><span>TikTok</span></a>
+    <a data-link="discord" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.24.46a18.4 18.4 0 0 0-6.3 0L8.6 3a19.8 19.8 0 0 0-4.9 1.4C.6 9 -.2 13.5.2 17.9a19.9 19.9 0 0 0 6 3l1.3-2.1a12.9 12.9 0 0 1-2-.97l.5-.37a14.2 14.2 0 0 0 12 0l.5.37c-.64.38-1.3.7-2 .97l1.3 2.1a19.9 19.9 0 0 0 6-3c.5-5.1-.8-9.6-3.5-13.5zM8.5 15.2c-1.2 0-2.1-1.1-2.1-2.4s.9-2.4 2.1-2.4 2.1 1.1 2.1 2.4-.9 2.4-2.1 2.4zm7 0c-1.2 0-2.1-1.1-2.1-2.4s.9-2.4 2.1-2.4 2.1 1.1 2.1 2.4-.9 2.4-2.1 2.4z"/></svg><span>Discord</span></a>
+  </nav>
+</div></header>
+<header class="adm-bar hidden" id="adm-bar"><div class="adm-bar-in">
+  <button class="hamb" id="hamb" aria-label="Menu"><i></i><i></i><i></i></button>
+  <div class="adm-ttl"><span class="hash">#</span><span id="adm-page">Strona główna</span></div>
+  <span class="tb-sp"></span>
+  <button class="ghost small" id="btn-refresh">↻ Odśwież</button>
+</div></header>
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="dr-head"><span class="logo">⚙️</span> Panel admina</div>
+  <nav class="dr-nav" id="dr-nav"></nav>
+  <div class="nav-sp"></div>
+  <div class="nav-sep"></div>
+  <button class="nav-item logout" id="btn-logout">Wyloguj</button>
+</aside>
+<div class="wrap">
+
+  <!-- ===================== STRONA GŁÓWNA ===================== -->
+  <div id="view-main" class="hidden">
+    <div class="hero" id="hero">
+      <i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i>
+      <h1>🤖 AI Discord Server Generator</h1>
+      <p class="sub" id="main-sub">Opisz swój wymarzony serwer. AI zaprojektuje kategorie, kanały, role i uprawnienia, a nasz bot zbuduje je na Twoim serwerze Discord i sam z niego wyjdzie.</p>
+    </div>
+
+    <div id="ann-banner" class="banner info hidden"></div>
+    <div id="svc-banner" class="banner bad hidden"></div>
+
+    <div id="cfg-warn" class="banner bad hidden">Ustaw poprawny <b>API_URL</b> na początku skryptu w pliku index.html (adres Twojego Workera z Cloudflare).</div>
+
+    <div class="card hidden" id="shared-card">
+      <h2 id="sh-title">Udostępniony serwer</h2>
+      <p class="muted" id="sh-desc"></p>
+      <div class="tree" id="sh-tree"></div>
+      <div class="roles" id="sh-roles"></div>
+      <div class="res-tools" id="sh-tools">
+        <button id="sh-use">🚀 Użyj</button>
+        <button class="ghost" id="sh-save">💾 Zapisz u siebie</button>
+      </div>
+    </div>
+
+    <div class="card" id="card-prompt">
+      <h2>Opisz serwer</h2>
+      <textarea id="prompt" maxlength="800" placeholder="np. Serwer dla fanów Minecrafta po polsku: ogłoszenia, czat, pomoc w budowaniu, kanały głosowe do gry, role dla moderatorów i weteranów"></textarea>
+      <div class="row">
+        <span class="muted"><span id="counter">0</span> / <span id="maxp">800</span> · Ctrl+Enter = generuj</span>
+        <button id="gen">Generuj Serwer przez AI 🚀</button>
+      </div>
+      <label class="opt"><input type="checkbox" id="opt-clean"> <span>Usuń wszystkie kanały przed rozpoczęciem</span></label>
+      <div class="opt-warn hidden" id="opt-warn">Uwaga: po dodaniu bota zostaną <b>nieodwracalnie</b> usunięte WSZYSTKIE istniejące kanały i kategorie na wybranym serwerze.</div>
+      <div class="chips" id="chips"></div>
+    </div>
+
+    <div class="card hidden" id="saved-card">
+      <h2>Zapisane serwery</h2>
+      <p class="muted" style="margin:0">Zapisane w tej przeglądarce (nie na serwerze). „Użyj” buduje serwer bez AI. Opcja usuwania kanałów z karty powyżej też obowiązuje.</p>
+      <div id="saved-list"></div>
+    </div>
+
+    <div id="progress" class="card hidden">
+      <h2>Postęp</h2>
+      <div class="logs" id="logs"></div>
+      <div class="error hidden" id="err"></div>
+    </div>
+
+    <div id="invite" class="card hidden">
+      <h2>Dodaj bota do swojego serwera</h2>
+      <ol class="steps">
+        <li>Miej gotowy własny serwer na Discordzie (może być nowy i pusty). Bot tworzy role, kategorie i kanały wraz z ich uprawnieniami. Istniejących kanałów nie rusza, chyba że zaznaczyłeś „Usuń wszystkie kanały”.</li>
+        <li>Kliknij przycisk poniżej, wybierz swój serwer i potwierdź. <b>Zostaw uprawnienie „Administrator”</b> – bez niego bot nie nada rolom i kanałom uprawnień.</li>
+        <li>Wróć tutaj. Reszta dzieje się sama, a bot po skończonej pracy opuści serwer.</li>
+      </ol>
+      <div class="banner bad hidden" id="invite-clean"><b>Usuwanie kanałów włączone:</b> po dodaniu bota zostaną skasowane WSZYSTKIE istniejące kanały i kategorie na wybranym serwerze. Wybierz serwer ostrożnie.</div>
+      <a id="invite-btn" class="btn big" href="#" target="_blank" rel="noopener">Dodaj bota do serwera 🤖</a>
+      <div class="waiting"><div class="spinner"></div><span id="wait-text">AI projektuje serwer, a Ty możesz już dodać bota…</span></div>
+      <div class="row">
+        <span class="muted">Dodałeś bota, a nic się nie dzieje?</span>
+        <button class="ghost small" id="claim">Dodałem bota – kontynuuj</button>
+      </div>
+    </div>
+
+    <div id="result" class="card hidden">
+      <h2 id="res-title">Podgląd serwera</h2>
+      <div class="done-box hidden" id="done-box"></div>
+      <p class="muted" id="res-desc"></p>
+      <div class="tree" id="tree"></div>
+      <div class="roles" id="roles"></div>
+      <div class="res-tools" id="res-tools">
+        <button class="ghost" id="btn-save">💾 Zapisz</button>
+        <button class="ghost" id="btn-share">🔗 Udostępnij</button>
+      </div>
+      <div class="res-actions hidden" id="res-actions">
+        <button class="ghost" id="again">✨ Nowy serwer</button>
+      </div>
+    </div>
+
+    <div id="info">
+      <div class="sect-title rv">Jak to działa</div>
+      <div class="grid3">
+        <div class="feat rv" style="--d:0"><span class="num">1</span><div class="fi">✍️</div><b>Opisz serwer</b><p>Napisz kilka zdań o swoim pomyśle. Im więcej szczegółów, tym lepszy efekt.</p></div>
+        <div class="feat rv" style="--d:1"><span class="num">2</span><div class="fi">🤖</div><b>Dodaj bota</b><p>Klikasz przycisk, wybierasz swój serwer. W tym czasie AI już projektuje strukturę.</p></div>
+        <div class="feat rv" style="--d:2"><span class="num">3</span><div class="fi">🚀</div><b>Gotowe</b><p>Bot buduje wszystko na Twoim serwerze i sam z niego wychodzi.</p></div>
+      </div>
+
+      <div class="sect-title rv">Co potrafi generator</div>
+      <div class="grid3">
+        <div class="feat rv" style="--d:0"><div class="fi">🎭</div><b>Role z uprawnieniami</b><p>AI nadaje rolom prawdziwe uprawnienia, np. Admin dostaje uprawnienie Administrator.</p></div>
+        <div class="feat rv" style="--d:1"><div class="fi">🔒</div><b>Prywatne kanały</b><p>Kanały tylko dla wybranych ról, tylko do odczytu, NSFW, slowmode i limity głosowe.</p></div>
+        <div class="feat rv" style="--d:2"><div class="fi">🧹</div><b>Czyszczenie serwera</b><p>Opcja usunięcia starych kanałów przed budową. Nieusuwalne dostają wiadomość.</p></div>
+        <div class="feat rv" style="--d:3"><div class="fi">👁️</div><b>Podgląd na żywo</b><p>Zobaczysz drzewo kanałów i ról, zanim bot skończy pracę.</p></div>
+        <div class="feat rv" style="--d:4"><div class="fi">🚪</div><b>Bot wychodzi sam</b><p>Po skończeniu bot opuszcza Twój serwer. Nie zostaje żaden ślad.</p></div>
+        <div class="feat rv" style="--d:5"><div class="fi">🆓</div><b>Za darmo</b><p>Bez rejestracji i bez logowania. Wystarczy opis i własny serwer.</p></div>
+      </div>
+
+      <div class="sect-title rv">Najczęstsze pytania</div>
+      <div class="faq rv">
+        <details><summary>Czy bot dostanie pełną kontrolę nad serwerem?</summary><div class="ans">Bot prosi o uprawnienie Administrator, bo tylko wtedy może nadać rolom i kanałom uprawnienia. Działa przez chwilę i sam opuszcza serwer po zakończeniu pracy.</div></details>
+        <details><summary>Co robi opcja „Usuń wszystkie kanały”?</summary><div class="ans">Przed budową bot kasuje wszystkie istniejące kanały i kategorie. Tego nie da się cofnąć. Kanały wymagane przez serwer społeczności zostają, a bot zostawia w nich wiadomość, że trzeba je usunąć ręcznie.</div></details>
+        <details><summary>Dodałem bota, a nic się nie dzieje</summary><div class="ans">Kliknij „Dodałem bota – kontynuuj” w karcie z generatorem. Nie zamykaj karty, w której klikasz Generuj, dopóki budowa się nie skończy.</div></details>
+        <details><summary>Dlaczego generator jest wyłączony?</summary><div class="ans">Albo został wyłączony ręcznie, albo chwilowo nie działają boty lub AI, albo wyczerpał się limit godzinowy. Status widać u góry strony i odświeża się sam.</div></details>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== ADMIN: LOGOWANIE ======================== -->
+  <div id="view-login" class="hidden">
+    <div class="card login">
+      <h1 style="font-size:22px">Panel admina</h1>
+      <p class="muted">Wpisz 6-cyfrowy kod z aplikacji Authenticator.</p>
+      <input type="text" id="code" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="one-time-code">
+      <button id="login-btn" style="width:100%">Zaloguj</button>
+      <div class="error hidden" id="login-err"></div>
+    </div>
+  </div>
+
+  <!-- ======================== ADMIN: PANEL ======================== -->
+  <div id="view-admin" class="hidden">
+
+    <!-- Strona główna -->
+    <section class="page" id="pg-home">
+      <div id="banners"></div>
+      <div class="hero adm-hero">
+        <i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i>
+        <h1>Witaj, administratorze 👋</h1>
+        <p class="sub">Sesja wygaśnie za <b class="count" id="sess-left">--:--:--</b></p>
+        <div class="sess-bar"><i id="sess-fill"></i></div>
+        <div class="row"><span id="pause-state" class="status-pill load">…</span><span class="muted" id="sess-note" style="color:#e3e5ff"></span></div>
+      </div>
+      <div class="stats" id="stat-mini"></div>
+      <div class="two">
+        <div class="card">
+          <h2>Rozpoczęte generacje – ostatnie 14 dni</h2>
+          <div class="bars" id="bars"></div>
+          <p class="muted" id="stat-note" style="margin:12px 0 0"></p>
+        </div>
+        <div class="card">
+          <h2>Generator</h2>
+          <div class="ctl">
+            <button id="btn-pause" class="danger">Wyłącz generator</button>
+            <button id="btn-bypass" class="ghost hidden">🧪 Włącz dla mnie na 30 min</button>
+            <div class="hint hidden" id="bypass-info"></div>
+            <div class="hint" id="pause-hint">Gdy wyłączony, strona od razu pokazuje „Generator jest wyłączony” i blokuje przycisk Generuj. To samo dzieje się automatycznie, gdy padną wszystkie boty lub klucze Groq.</div>
+            <a class="btn ghost" id="open-site" href="#" target="_blank" rel="noopener">↗ Otwórz stronę generatora</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tokeny -->
+    <section class="page hidden" id="pg-tokens">
+      <div class="card">
+        <div class="sec-head"><h2>🧠 Klucze Groq</h2><span class="muted" id="groq-sum"></span></div>
+        <div class="toks" id="tbl-groq"></div>
+      </div>
+      <div class="card">
+        <div class="sec-head"><h2>🤖 Boty Discord</h2><span class="muted" id="bot-sum"></span></div>
+        <div class="toks" id="tbl-bots"></div>
+      </div>
+      <div class="card">
+        <h2>Narzędzia tokenów</h2>
+        <div class="res-actions" style="margin:0">
+          <button id="btn-health" class="ghost">🩺 Testuj wszystkie tokeny</button>
+          <button id="btn-cleanup" class="ghost">🚪 Wyprowadź boty ze wszystkich serwerów</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Konfiguracja każdej aplikacji bota (Discord)</h2>
+        <div class="setup">
+          W <b>discord.com/developers/applications</b>, dla <b>każdego</b> bota:
+          <ol>
+            <li><b>Bot</b> → włącz <b>Public Bot</b> (bez tego nikt poza Tobą nie doda bota).</li>
+            <li><b>OAuth2</b> → <b>Redirects</b> → dodaj dokładnie ten adres i zapisz:</li>
+          </ol>
+          <div class="copyrow"><code id="redir"></code><button class="small" id="copy-redir">Kopiuj</button></div>
+          <ol start="3">
+            <li>Opcja „Requires OAuth2 Code Grant” ma być <b>wyłączona</b>.</li>
+          </ol>
+          <span class="muted">Przycisk „Test” przy bocie pokazuje, czy bot jest publiczny.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Statystyki -->
+    <section class="page hidden" id="pg-stats">
+      <div class="stats" id="stat-grid"></div>
+      <div class="card">
+        <div class="sec-head"><h2>Ostatnie zdarzenia</h2><button class="ghost small" id="btn-export">⬇ Pobierz statystyki (JSON)</button></div>
+        <div class="evs" id="log-list"></div>
+      </div>
+    </section>
+
+    <!-- Logi -->
+    <section class="page hidden" id="pg-logs">
+      <div class="card">
+        <div class="sec-head"><h2>Logi</h2><button class="ghost small danger" id="logs-clear">🗑 Wyczyść niegwiazdkowane</button></div>
+        <p class="muted" style="margin:0 0 12px" id="logs-info">Zmiany w panelu, logowania, błędy AI i tokenów, wyniki budowania. Wpisy starsze niż 14 dni są usuwane automatycznie, chyba że mają gwiazdkę ★.</p>
+        <div class="tools">
+          <select id="lg-type"><option value="">Wszystkie typy</option><option value="login">Logowania</option><option value="admin">Zmiany admina</option><option value="ai">AI</option><option value="build">Budowanie</option><option value="token">Tokeny</option><option value="security">Bezpieczeństwo</option><option value="share">Udostępnianie</option></select>
+          <select id="lg-level"><option value="">Wszystkie poziomy</option><option value="error">Błędy</option><option value="warn">Ostrzeżenia</option><option value="info">Informacje</option></select>
+          <input type="text" id="lg-q" class="grow" placeholder="Szukaj w logach…">
+          <label class="opt" style="margin:0"><input type="checkbox" id="lg-star"> <span>tylko ★</span></label>
+        </div>
+        <div class="logl" id="logs-list"></div>
+      </div>
+    </section>
+
+    <!-- Laboratorium AI -->
+    <section class="page hidden" id="pg-lab">
+      <div class="card">
+        <h2>Laboratorium AI</h2>
+        <p class="muted" style="margin:0 0 12px">Sprawdź, co AI zaprojektuje z danego opisu, bez dodawania bota i bez zużywania limitu botów. Zużywa tylko klucz Groq.</p>
+        <textarea id="lab-prompt" maxlength="2000" placeholder="np. Serwer dla fanów anime po polsku z kanałami na recenzje i rolami za poziomy"></textarea>
+        <div class="row"><span class="muted" id="lab-meta"></span><button id="lab-run">Zaprojektuj</button></div>
+      </div>
+      <div class="card hidden" id="lab-card">
+        <div class="sec-head"><h2 id="lab-title">Wynik</h2><button class="ghost small" id="lab-copy">Kopiuj</button></div>
+        <div class="tabs" id="lab-tabs">
+          <button data-tab="view" class="on">Podgląd</button><button data-tab="json">JSON</button><button data-tab="raw">Surowa odpowiedź</button><button data-tab="info">Szczegóły</button><button data-tab="msg">Wysłane do AI</button>
+        </div>
+        <div id="lab-p-view"><div class="tree" id="lab-tree"></div><div class="roles" id="lab-roles"></div></div>
+        <pre class="codebox hidden" id="lab-p-json"></pre>
+        <pre class="codebox hidden" id="lab-p-raw"></pre>
+        <div class="hidden" id="lab-p-info"><div class="kv" id="lab-kv"></div><ul class="warnlist" id="lab-warn"></ul></div>
+        <pre class="codebox hidden" id="lab-p-msg"></pre>
+        <div class="sv-ref" id="lab-refine">
+          <input type="text" id="lab-change" maxlength="300" placeholder="Zmień coś w tym wyniku, np. dodaj kanał na memy">
+          <button class="ghost small" id="lab-refine-btn">✨ Zmień coś</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ustawienia -->
+    <section class="page hidden" id="pg-settings">
+      <div class="card">
+        <h2>Ustawienia generatora</h2>
+        <div class="form">
+          <label>Komunikat na stronie głównej <span class="muted">(pusty = brak)</span>
+            <input type="text" id="set-ann" maxlength="200" placeholder="np. Dziś działamy do 22:00"></label>
+          <label>Własny komunikat, gdy generator jest wyłączony <span class="muted">(pusty = domyślny)</span>
+            <input type="text" id="set-off" maxlength="160" placeholder="Generator jest wyłączony."></label>
+          <div class="form-grid">
+            <label>Serwerów na bota / godz.<input type="number" id="set-hourly" min="1" max="100" placeholder="domyślnie"></label>
+            <label>Startów na minutę z jednego IP<input type="number" id="set-rate" min="1" max="60" placeholder="domyślnie"></label>
+            <label>Maks. znaków opisu<input type="number" id="set-maxp" min="100" max="2000" placeholder="domyślnie"></label>
+          </div>
+          <label class="opt" style="margin-top:4px"><input type="checkbox" id="set-clean"> <span>Pozwól odwiedzającym na opcję „Usuń wszystkie kanały”</span></label>
+          <div class="row" style="justify-content:flex-end"><button id="set-save" class="good">Zapisz ustawienia</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Informacje o systemie</h2>
+        <div class="kv" id="sys-info"></div>
+      </div>
+      <div class="card">
+        <h2>Strefa ryzyka</h2>
+        <p class="muted" style="margin:0 0 12px">Zdejmuje blokady tokenów po awariach i zeruje liczniki. Tego nie da się cofnąć.</p>
+        <button id="btn-reset" class="danger">♻️ Resetuj błędy i statystyki</button>
+      </div>
+    </section>
+  </div>
+
+</div>
+<footer class="endbar hidden" id="endbar"><div class="eb-in">
+  <div class="eb-brand"><b>AI Discord Server Generator</b><br>Projekt nie jest powiązany z Discord Inc.</div>
+  <nav class="eb-links">
+    <a data-link="github" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
+    <a data-link="tiktok" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>TikTok</a>
+    <a data-link="discord" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.24.46a18.4 18.4 0 0 0-6.3 0L8.6 3a19.8 19.8 0 0 0-4.9 1.4C.6 9 -.2 13.5.2 17.9a19.9 19.9 0 0 0 6 3l1.3-2.1a12.9 12.9 0 0 1-2-.97l.5-.37a14.2 14.2 0 0 0 12 0l.5.37c-.64.38-1.3.7-2 .97l1.3 2.1a19.9 19.9 0 0 0 6-3c.5-5.1-.8-9.6-3.5-13.5zM8.5 15.2c-1.2 0-2.1-1.1-2.1-2.4s.9-2.4 2.1-2.4 2.1 1.1 2.1 2.4-.9 2.4-2.1 2.4zm7 0c-1.2 0-2.1-1.1-2.1-2.4s.9-2.4 2.1-2.4 2.1 1.1 2.1 2.4-.9 2.4-2.1 2.4z"/></svg>Discord</a>
+    <a data-link="admin" href="#"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>Panel Administracyjny</a>
+  </nav>
+</div></footer>
+<div id="ts-box"></div>
+<div class="toasts" id="toasts"></div>
+
+<script>
+/* ======================= KONFIGURACJA FRONTENDU ======================= */
+const API_URL = "https://verity.2fnh7sft5c.workers.dev";
+
+/* Linki w pasku u góry i w stopce (endbar). */
+const LINKS = {
+  github: "https://github.com/Michalin2022/Generator-serwerow-Discord",
+  tiktok: "https://www.tiktok.com/@Michalin2022",
+  discord: "https://discord.gg/Hq6jShEr67",
+};
+
+/* ============================== NARZĘDZIA ============================== */
+const API_READY = !/TWOJA-SUBDOMENA/.test(API_URL);
+const $ = (id) => document.getElementById(id);
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+document.documentElement.classList.add("js");
+const isAdmin = /\/admin\/?(index\.html)?$/.test(location.pathname) || /^#\/?admin/.test(location.hash);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/* Adres strony głównej (to on musi być dodany jako Redirect w aplikacjach botów). */
+function mainUrl() {
+  let p = location.pathname.replace(/index\.html$/, "").replace(/admin\/?$/, "");
+  if (!p.endsWith("/")) p += "/";
+  return location.origin + p;
+}
+
+async function apiFetch(path, opts) {
+  try {
+    return await fetch(API_URL + path, opts);
+  } catch (e) {
+    throw new Error(API_READY
+      ? "Brak połączenia z serwerem. Sprawdź internet i spróbuj ponownie."
+      : "Ustaw poprawny API_URL w pliku index.html.");
+  }
+}
+
+/* POST z JSON. raw=true zwraca też odpowiedzi z ok:false (bez rzucania błędu). */
+async function postJson(path, body, raw) {
+  const res = await apiFetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const j = await res.json().catch(() => null);
+  if (!j) throw new Error("Błąd serwera (" + res.status + ").");
+  if (raw) return j;
+  if (!res.ok || j.ok === false) {
+    const err = new Error(j.error || "Błąd serwera (" + res.status + ").");
+    err.fatal = !!j.fatal;
+    throw err;
+  }
+  return j;
+}
+
+function toast(msg, type) {
+  const t = el("div", "toast" + (type ? " " + type : ""), msg);
+  $("toasts").appendChild(t);
+  setTimeout(() => {
+    t.style.transition = "opacity .3s";
+    t.style.opacity = "0";
+    setTimeout(() => t.remove(), 320);
+  }, 3800);
+}
+
+function confirmBox(text, label, danger) {
+  return new Promise((resolve) => {
+    const ov = el("div", "overlay");
+    const m = el("div", "modal");
+    m.appendChild(el("p", "", text));
+    const row = el("div", "row");
+    const no = el("button", "ghost small", "Anuluj");
+    const yes = el("button", "small" + (danger === false ? "" : " danger"), label || "Potwierdź");
+    const close = (v) => { ov.remove(); resolve(v); };
+    no.addEventListener("click", () => close(false));
+    yes.addEventListener("click", () => close(true));
+    ov.addEventListener("click", (e) => { if (e.target === ov) close(false); });
+    row.appendChild(no);
+    row.appendChild(yes);
+    m.appendChild(row);
+    ov.appendChild(m);
+    document.body.appendChild(ov);
+  });
+}
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (e) {
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand("copy");
+      ta.remove();
+      return ok;
+    } catch (e2) {
+      return false;
+    }
+  }
+}
+
+/* ============================ STRONA GŁÓWNA ============================ */
+const EXAMPLES = [
+  "Serwer dla graczy Minecrafta po polsku z kanałami na budowle, redstone i eventy",
+  "Społeczność nauki programowania: kanały dla początkujących, projektów i pomocy z kodem",
+  "Serwer fanów anime z kanałami na recenzje, memy, sezonowe tytuły i głosowe seanse",
+  "Serwer dla zespołu e-sportowego: treningi, strategie, rekrutacja i voice dla składów",
+];
+
+const QS = new URLSearchParams(location.search);
+const RETURN_MODE = !isAdmin && QS.has("state") && (QS.has("guild_id") || QS.has("error"));
+
+/* Stan jednego przebiegu. */
+function newFlow(o) {
+  return Object.assign({ job: null, prompt: "", structure: null, guildId: null, applying: false, origin: false, clean: false, roleIds: {} }, o || {});
+}
+let flow = newFlow();
+let busy = false;
+const bus = typeof BroadcastChannel !== "undefined" ? new BroadcastChannel("aidg_bus") : null;
+
+function flowKey(job) { return "aidg_flow_" + job; }
+function saveFlow() {
+  try {
+    localStorage.setItem(flowKey(flow.job), JSON.stringify({ prompt: flow.prompt, structure: flow.structure, clean: flow.clean, t: Date.now() }));
+  } catch (e) { /* bez localStorage działa przekazywanie przez kartę-matkę */ }
+}
+function loadFlow(job) {
+  try {
+    const v = JSON.parse(localStorage.getItem(flowKey(job)) || "null");
+    return v && Date.now() - v.t < 3 * 3600 * 1000 ? v : null;
+  } catch (e) { return null; }
+}
+function acquireLock(job) {
+  const k = "aidg_lock_" + job;
+  try {
+    if (localStorage.getItem(k)) return false;
+    localStorage.setItem(k, String(Date.now()));
+  } catch (e) { /* bez blokady – trudno */ }
+  return true;
+}
+
+/* ---- status generatora (włączony / wyłączony / awaria) ---- */
+const svc = { state: "load", message: "", bypassUntil: 0, announcement: "", allowClean: true, maxPrompt: 800 };
+/* Przepustka administratora (panel → „Włącz dla mnie na 30 min”) leży w localStorage tej samej strony. */
+function bypassInfo() {
+  try {
+    const v = JSON.parse(localStorage.getItem("aidg_bypass") || "null");
+    if (v && v.token && v.until > Date.now()) return v;
+  } catch (e) { /* brak przepustki */ }
+  return null;
+}
+const svcBlocked = () => svc.state === "down" || (svc.state === "off" && !(svc.bypassUntil > Date.now()));
+function refreshGen() {
+  const g = $("gen");
+  if (!g) return;
+  const off = svcBlocked();
+  g.disabled = busy || off;
+  g.textContent = off ? "Generator jest wyłączony" : "Generuj Serwer przez AI 🚀";
+}
+function renderStatus() {
+  const pill = $("status-pill");
+  const off = svcBlocked();
+  const bp = svc.state === "off" && !off;
+  pill.className = "status-pill " + (svc.state === "load" ? "load" : off ? "bad" : "ok");
+  $("status-text").textContent = svc.state === "load" ? "Sprawdzam…" : off ? "Wyłączony" : bp ? "Tryb admina" : "Online";
+  const b = $("svc-banner");
+  if (bp) {
+    const t = new Date(svc.bypassUntil).toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" });
+    b.textContent = "Tryb administratora: generator jest wyłączony dla innych, ale działa dla Ciebie do " + t + ".";
+  } else {
+    b.textContent = off ? (svc.message || "Generator jest wyłączony.") : "";
+  }
+  b.classList.toggle("bad", !bp);
+  b.classList.toggle("info", bp);
+  b.classList.toggle("hidden", !off && !bp);
+  const a = $("ann-banner");
+  a.textContent = svc.announcement || "";
+  a.classList.toggle("hidden", !svc.announcement);
+  const ow = document.querySelector(".opt");
+  if (ow) ow.classList.toggle("hidden", !svc.allowClean);
+  if (!svc.allowClean) { $("opt-clean").checked = false; $("opt-warn").classList.add("hidden"); }
+  $("prompt").maxLength = svc.maxPrompt;
+  $("maxp").textContent = svc.maxPrompt;
+  refreshGen();
+}
+async function loadStatus() {
+  if (!API_READY) return;
+  try {
+    const bp = bypassInfo();
+    const res = await fetch(API_URL + "/api/status" + (bp ? "?b=" + encodeURIComponent(bp.token) : ""), { cache: "no-store" });
+    const j = await res.json();
+    if (j && j.ok) {
+      svc.state = j.state; svc.message = j.message || "";
+      svc.bypassUntil = j.bypassUntil || 0; svc.announcement = j.announcement || "";
+      svc.allowClean = j.allowClean !== false; svc.maxPrompt = j.maxPrompt || 800;
+      renderStatus();
+    }
+  } catch (e) { /* bez statusu strona działa jak dotąd – błąd pokaże się po kliknięciu */ }
+}
+
+/* ---- efekty: fala na przycisku, pojawianie się sekcji przy przewijaniu ---- */
+function initFx() {
+  document.addEventListener("pointerdown", (e) => {
+    const b = e.target.closest && e.target.closest("button, .btn");
+    if (!b || b.disabled) return;
+    const r = b.getBoundingClientRect();
+    const size = Math.max(r.width, r.height) * 2;
+    const rp = el("span", "ripple");
+    rp.style.cssText = "width:" + size + "px;height:" + size + "px;left:" + (e.clientX - r.left - size / 2) + "px;top:" + (e.clientY - r.top - size / 2) + "px";
+    b.appendChild(rp);
+    setTimeout(() => rp.remove(), 650);
+  });
+  const items = document.querySelectorAll(".rv");
+  if (!("IntersectionObserver" in window)) { items.forEach((n) => n.classList.add("in")); return; }
+  const io = new IntersectionObserver((es) => es.forEach((en) => {
+    if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); }
+  }), { threshold: 0.12 });
+  items.forEach((n) => io.observe(n));
+}
+
+function setupChrome() {
+  $("topbar").classList.remove("hidden");
+  $("endbar").classList.remove("hidden");
+  document.querySelectorAll("[data-link]").forEach((a) => {
+    const k = a.getAttribute("data-link");
+    a.href = k === "admin" ? mainUrl() + "admin/" : LINKS[k];
+  });
+}
+
+function initMain() {
+  setupChrome();
+  initFx();
+  renderStatus();
+  loadStatus();
+  setInterval(() => { if (!document.hidden) loadStatus(); }, 30000);
+  $("view-main").classList.remove("hidden");
+  if (!API_READY) $("cfg-warn").classList.remove("hidden");
+  const prompt = $("prompt");
+  const counter = $("counter");
+  prompt.addEventListener("input", () => (counter.textContent = prompt.value.length));
+  prompt.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); generate(); }
+  });
+  EXAMPLES.forEach((ex) => {
+    const c = el("button", "chip", ex.length > 46 ? ex.slice(0, 44) + "…" : ex);
+    c.type = "button";
+    c.addEventListener("click", () => {
+      prompt.value = ex;
+      counter.textContent = ex.length;
+      prompt.focus();
+    });
+    $("chips").appendChild(c);
+  });
+  $("gen").addEventListener("click", generate);
+  $("btn-save").addEventListener("click", () => { if (flow.structure) saveServer(flow.structure, flow.prompt); });
+  $("btn-share").addEventListener("click", (e) => { if (flow.structure) shareStructure(flow.structure, e.currentTarget); });
+  renderSaved();
+  if (SHARE_ID) initShared();
+  if (API_READY && TURNSTILE_SITEKEY) setTimeout(tsLoad, 600);
+  $("opt-clean").addEventListener("change", () => $("opt-warn").classList.toggle("hidden", !$("opt-clean").checked));
+  $("claim").addEventListener("click", claimGuild);
+  $("again").addEventListener("click", () => {
+    if (RETURN_MODE) { location.href = mainUrl(); return; }
+    flow = newFlow();
+    ["progress", "invite", "result"].forEach((id) => $(id).classList.add("hidden"));
+    $("card-prompt").classList.remove("hidden");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    prompt.focus();
+  });
+
+  if (bus) {
+    bus.onmessage = (ev) => {
+      const m = ev.data || {};
+      if (m.job !== flow.job || !flow.job) return;
+      if (m.type === "guild" && flow.origin && !RETURN_MODE) {
+        bus.postMessage({ type: "ack", job: flow.job });
+        setGuild(m.guildId);
+      } else if (m.type === "ack") {
+        ackReceived = true;
+      } else if (RETURN_MODE && ackReceived) {
+        if (m.type === "progress") addLogLine(m.text, m.warn);
+        if (m.type === "finish") finishMirror(m);
+      }
+    };
+  }
+  if (RETURN_MODE) initReturn();
+}
+
+let ackReceived = false;
+
+/* ---- logi ---- */
+function addLogLine(msg, warn) {
+  const logs = $("logs");
+  const prev = logs.querySelector(".last");
+  if (prev) {
+    prev.classList.remove("last");
+    const sp = prev.querySelector(".spinner");
+    if (sp) sp.replaceWith(el("span", "tick", prev.classList.contains("warn") ? "!" : "✓"));
+  }
+  const line = el("div", "logline last" + (warn ? " warn" : ""));
+  line.appendChild(el("div", "spinner"));
+  line.appendChild(el("span", "", msg));
+  logs.appendChild(line);
+}
+function log(msg, warn) {
+  addLogLine(msg, warn);
+  if (bus && flow.origin && flow.job && !RETURN_MODE) bus.postMessage({ type: "progress", job: flow.job, text: msg, warn: !!warn });
+}
+function finishLogs(success) {
+  const prev = $("logs").querySelector(".last");
+  if (!prev) return;
+  prev.classList.remove("last");
+  const sp = prev.querySelector(".spinner");
+  if (sp) sp.replaceWith(el("span", "tick", success ? "✓" : "✗"));
+}
+function showError(msg) {
+  finishLogs(false);
+  $("progress").classList.remove("hidden");
+  const err = $("err");
+  err.textContent = msg;
+  err.classList.remove("hidden");
+  $("res-actions").classList.remove("hidden");
+  $("result").classList.toggle("hidden", !flow.structure);
+  if (RETURN_MODE || flow.structure) $("res-actions").classList.remove("hidden");
+  $("invite").classList.add("hidden");
+  $("card-prompt").classList.toggle("hidden", RETURN_MODE);
+  busy = false;
+  refreshGen();
+  if (bus && flow.origin && flow.job && !RETURN_MODE) bus.postMessage({ type: "finish", job: flow.job, ok: false, text: msg });
+}
+
+/* ---- podgląd / wynik ---- */
+const isEveryone = (r) => /^@?everyone$/i.test(String(r || ""));
+function hasOw(list, kind, perm) {
+  return (list || []).some((o) => isEveryone(o.role) && (o[kind] || []).includes(perm));
+}
+function chanTags(ch, cat) {
+  const all = [].concat(cat.overwrites || [], ch.overwrites || []);
+  const tags = [];
+  if (hasOw(all, "deny", "VIEW_CHANNEL") || (ch.type === 2 && hasOw(all, "deny", "CONNECT"))) tags.push(["lock", "🔒 prywatny"]);
+  else if (ch.type === 0 && hasOw(all, "deny", "SEND_MESSAGES")) tags.push(["ro", "tylko odczyt"]);
+  if (ch.nsfw) tags.push(["nsfw", "NSFW"]);
+  if (ch.slowmode) tags.push(["", "slowmode " + ch.slowmode + " s"]);
+  if (ch.userLimit) tags.push(["", "limit " + ch.userLimit]);
+  return tags;
+}
+
+function renderPreview(s) {
+  $("res-title").textContent = "Podgląd: " + s.serverName;
+  $("res-desc").textContent = s.description || "";
+  fillPreview(s, $("tree"), $("roles"));
+  $("result").classList.remove("hidden");
+}
+
+function fillPreview(s, tree, roles) {
+  tree.textContent = "";
+  let anim = 0;
+  s.categories.forEach((cat) => {
+    const box = el("div", "cat");
+    const nm = el("div", "cat-name", "▾ " + cat.name);
+    const catPrivate = hasOw(cat.overwrites, "deny", "VIEW_CHANNEL");
+    if (catPrivate) nm.appendChild(el("span", "tag lock", "🔒 prywatna"));
+    box.appendChild(nm);
+    cat.channels.forEach((ch) => {
+      const row = el("div", "chan");
+      row.style.setProperty("--i", Math.min(anim++, 40));
+      row.appendChild(el("span", "ic", ch.type === 2 ? "🔊" : "#"));
+      row.appendChild(document.createTextNode(ch.name));
+      chanTags(ch, cat).forEach(([cls, text]) => row.appendChild(el("span", "tag " + cls, text)));
+      if (ch.topic) row.appendChild(el("span", "topic", ch.topic));
+      box.appendChild(row);
+    });
+    tree.appendChild(box);
+  });
+  roles.textContent = "";
+  let roleIdx = 0;
+  s.roles.forEach((r) => {
+    const perms = r.permissions || [];
+    const chip = el("span", "role");
+    chip.style.setProperty("--i", Math.min(roleIdx++, 20));
+    const dot = el("span", "dot");
+    dot.style.background = r.color ? "#" + r.color.toString(16).padStart(6, "0") : "#99aab5";
+    chip.appendChild(dot);
+    chip.appendChild(document.createTextNode(r.name));
+    if (perms.includes("ADMINISTRATOR")) chip.appendChild(el("span", "star", "★ admin"));
+    else if (perms.length) chip.appendChild(el("span", "tag", perms.length + " uprawn."));
+    if (perms.length) chip.title = perms.join(", ");
+    roles.appendChild(chip);
+  });
+}
+
+function renderDone(partial) {
+  const s = flow.structure;
+  finishLogs(true);
+  $("invite").classList.add("hidden");
+  $("res-title").textContent = (partial ? "Prawie gotowe: " : "Gotowe: ") + s.serverName;
+  const box = $("done-box");
+  box.textContent = partial
+    ? "Serwer zbudowany, ale część elementów (np. uprawnień) się nie utworzyła lub została pominięta – szczegóły w logach powyżej."
+    : "Serwer zbudowany! Zajrzyj na swój serwer na Discordzie. Bot sam go opuścił.";
+  box.classList.remove("hidden");
+  $("res-actions").classList.remove("hidden");
+  $("result").classList.remove("hidden");
+  $("result").scrollIntoView({ behavior: "smooth", block: "start" });
+  busy = false;
+  refreshGen();
+  if (bus && flow.origin && flow.job && !RETURN_MODE) bus.postMessage({ type: "finish", job: flow.job, ok: true, text: box.textContent });
+}
+
+function finishMirror(m) {
+  finishLogs(m.ok);
+  const box = $("done-box");
+  box.textContent = m.ok ? m.text : "Nie udało się: " + m.text;
+  box.classList.remove("hidden");
+  $("res-actions").classList.remove("hidden");
+  $("result").classList.remove("hidden");
+}
+
+/* ---- główny przepływ ---- */
+async function generate() { return startFlow(null); }
+
+async function startFlow(preset) {
+  if (busy) return;
+  const prompt = preset ? "" : $("prompt").value.trim();
+  $("err").classList.add("hidden");
+  $("progress").classList.remove("hidden");
+  $("logs").textContent = "";
+  if (!preset && prompt.length < 5) {
+    $("err").textContent = "Opisz serwer dokładniej (min. 5 znaków).";
+    $("err").classList.remove("hidden");
+    return;
+  }
+  busy = true;
+  $("gen").disabled = true;
+  ["invite", "result"].forEach((id) => $(id).classList.add("hidden"));
+  $("done-box").classList.add("hidden");
+  $("res-actions").classList.add("hidden");
+  flow = newFlow({ prompt, origin: true, clean: $("opt-clean").checked });
+  ackReceived = false;
+  addLogLine("Rezerwuję bota…");
+  $("progress").scrollIntoView({ behavior: "smooth", block: "start" });
+  try {
+    const bp = bypassInfo();
+    const turnstile = await tsToken();
+    const body = { redirect: mainUrl(), clean: flow.clean && svc.allowClean, bypass: bp ? bp.token : undefined, turnstile };
+    if (preset) body.structure = preset; else body.prompt = prompt;
+    const st = await postJson("/api/start", body);
+    flow.job = st.job;
+    saveFlow();
+    $("invite-btn").href = st.inviteUrl;
+    $("invite").classList.remove("hidden");
+    $("invite-clean").classList.toggle("hidden", !flow.clean);
+    $("invite").scrollIntoView({ behavior: "smooth", block: "start" });
+    if (preset) {
+      flow.structure = preset;
+      saveFlow();
+      renderPreview(preset);
+      $("wait-text").textContent = "Czekam, aż dodasz bota do serwera…";
+      log("Bot zarezerwowany. Dodaj go do serwera – struktura jest gotowa (bez AI).");
+    } else {
+      log("Bot zarezerwowany. Dodaj go do serwera – AI już projektuje strukturę…");
+      fetchStructure();
+    }
+  } catch (e) {
+    showError(e.message || "Coś poszło nie tak.");
+    loadStatus();
+  }
+}
+
+async function fetchStructure() {
+  try {
+    const j = await postJson("/api/structure", { job: flow.job, prompt: flow.prompt });
+    flow.structure = j.structure;
+    saveFlow();
+    renderPreview(j.structure);
+    $("wait-text").textContent = flow.guildId
+      ? "Budowanie…"
+      : "Struktura gotowa. Czekam, aż dodasz bota do serwera…";
+    log(flow.guildId ? "Struktura gotowa." : "Struktura gotowa. Czekam na dodanie bota do serwera…");
+    maybeRunApply();
+  } catch (e) {
+    showError(e.message || "AI nie zdołało zaprojektować serwera.");
+  }
+}
+
+function setGuild(gid) {
+  if (flow.guildId) return;
+  flow.guildId = gid;
+  log("Bot dodany na serwerze.");
+  $("wait-text").textContent = flow.structure ? "Budowanie…" : "Bot jest na serwerze. Czekam, aż AI skończy projekt…";
+  maybeRunApply();
+}
+
+async function claimGuild() {
+  const b = $("claim");
+  b.disabled = true;
+  try {
+    const j = await postJson("/api/claim", { job: flow.job });
+    setGuild(j.guildId);
+  } catch (e) {
+    toast(e.message, "bad");
+  } finally {
+    b.disabled = false;
+  }
+}
+
+function maybeRunApply() {
+  if (flow.structure && flow.guildId && !flow.applying) runApply();
+}
+
+async function runApply() {
+  if (flow.applying) return;
+  if (!acquireLock(flow.job)) return;
+  flow.applying = true;
+  $("invite").classList.add("hidden");
+  const s = flow.structure;
+  const t0 = Date.now();
+  let warnings = 0;
+  let firstError = "";
+  let fatal = false;
+  const note = (msg) => {
+    warnings++;
+    if (!firstError) firstError = msg;
+    log("Uwaga: " + msg, true);
+  };
+  const call = async (step, extra) => {
+    try {
+      return await postJson("/api/apply", Object.assign({ job: flow.job, guildId: flow.guildId, step, structure: s }, extra || {}), true);
+    } catch (e) {
+      return { ok: false, error: e.message, fatal: false };
+    }
+  };
+
+  if (flow.clean) {
+    log("Usuwanie istniejących kanałów…");
+    let keep = [];
+    const stuck = [];
+    for (let i = 0; i < 40; i++) {
+      const j = await call("clean", { keep });
+      if (!j.ok) {
+        note(j.error || "błąd usuwania kanałów");
+        if (j.fatal) fatal = true;
+        break;
+      }
+      keep = keep.concat(j.failed || []);
+      (j.failedNames || []).forEach((n) => stuck.push(n));
+      if (!j.remaining) break;
+    }
+    if (!fatal && keep.length) log("Nie udało się usunąć " + keep.length + " kanałów (" + stuck.slice(0, 6).join(", ") + (stuck.length > 6 ? "…" : "") + "). Bot napisał w nich: „Ten kanał nie mógł być usunięty. Usuń go ręcznie.”", true);
+  }
+
+  const steps = [{ id: "roles", label: "Tworzenie ról (" + s.roles.length + ")…" }];
+  s.categories.forEach((c, i) => steps.push({ id: "cat:" + i, label: "Kategoria: " + c.name + " (" + c.channels.length + " kanałów)…" }));
+  for (const st of steps) {
+    if (fatal) break;
+    log(st.label);
+    const j = await call(st.id, { roleIds: flow.roleIds });
+    if (j.roleIds) flow.roleIds = Object.assign({}, flow.roleIds, j.roleIds);
+    (j.warnings || []).forEach(note);
+    if (!j.ok) {
+      note(j.error || "błąd kroku");
+      if (j.fatal) fatal = true;
+    }
+  }
+
+  log("Bot opuszcza serwer…");
+  const l = await call("leave", { success: warnings === 0, error: firstError, ms: Date.now() - t0 });
+  if (!l.ok) log(l.error || "Bot nie zdołał wyjść z serwera.", true);
+
+  if (fatal) showError(firstError || "Nie udało się zbudować serwera.");
+  else renderDone(warnings > 0);
+}
+
+/* ---- karta, do której Discord odsyła po dodaniu bota ---- */
+async function initReturn() {
+  $("card-prompt").classList.add("hidden");
+  $("main-sub").textContent = "Bot został dodany. Trwa budowanie Twojego serwera.";
+  $("progress").classList.remove("hidden");
+  const job = QS.get("state");
+  if (QS.get("error")) {
+    flow = newFlow({ job });
+    showError("Dodawanie bota zostało anulowane. Wróć na stronę główną i spróbuj ponownie.");
+    return;
+  }
+  const gid = QS.get("guild_id");
+  const saved = loadFlow(job);
+  flow = newFlow({
+    job, prompt: saved ? saved.prompt : "", structure: saved ? saved.structure : null,
+    clean: saved ? !!saved.clean : false,
+  });
+  addLogLine("Bot dodany na serwerze.");
+  try { history.replaceState(null, "", location.pathname); } catch (e) { /* ignorujemy */ }
+
+  if (bus) {
+    bus.postMessage({ type: "guild", job, guildId: gid });
+    await sleep(1600);
+  }
+  if (ackReceived) {
+    addLogLine("Budowanie trwa w karcie z generatorem. Możesz do niej wrócić.");
+    return;
+  }
+  // karta-matka nie odpowiada (np. zamknięta na telefonie) – przejmujemy pracę
+  if (!flow.prompt && !flow.structure) {
+    showError("Nie znaleziono danych generowania w tej przeglądarce. Wróć na stronę główną i spróbuj ponownie (bot sam opuści serwer).");
+    return;
+  }
+  flow.guildId = gid;
+  if (flow.structure) {
+    renderPreview(flow.structure);
+    maybeRunApply();
+  } else {
+    addLogLine("AI projektuje serwer…");
+    fetchStructure();
+  }
+}
+
+/* ============ OCHRONA PRZED BOTAMI (Cloudflare Turnstile) ============ */
+const TURNSTILE_SITEKEY = "0x4AAAAAAF7szlcCfhx68XSZ";
+let tsReady = null;
+let tsWidget = null;
+function tsLoad() {
+  if (!TURNSTILE_SITEKEY) return Promise.resolve(null);
+  if (tsReady) return tsReady;
+  tsReady = new Promise((resolve) => {
+    if (window.turnstile) { resolve(window.turnstile); return; }
+    const sc = document.createElement("script");
+    sc.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+    sc.async = true;
+    sc.onload = () => resolve(window.turnstile || null);
+    sc.onerror = () => { tsReady = null; resolve(null); };
+    document.head.appendChild(sc);
+    setTimeout(() => resolve(window.turnstile || null), 12000);
+  });
+  return tsReady;
+}
+/* Jednorazowy token – każda chroniona akcja (start, zmiana, udostępnianie) pobiera świeży. */
+async function tsToken() {
+  if (!TURNSTILE_SITEKEY) return undefined;
+  const ts = await tsLoad();
+  if (!ts) throw new Error("Nie udało się załadować ochrony przed botami (Turnstile). Wyłącz blokery reklam i odśwież stronę.");
+  return new Promise((resolve, reject) => {
+    let done = false;
+    const fin = (fn, v) => { if (done) return; done = true; clearTimeout(timer); fn(v); };
+    const timer = setTimeout(() => fin(reject, new Error("Weryfikacja anty-botowa trwa zbyt długo. Spróbuj ponownie.")), 45000);
+    try { if (tsWidget !== null) ts.remove(tsWidget); } catch (e) { /* ignorujemy */ }
+    try {
+      tsWidget = ts.render("#ts-box", {
+        sitekey: TURNSTILE_SITEKEY, appearance: "interaction-only", theme: "dark", language: "pl",
+        callback: (t) => fin(resolve, t),
+        "error-callback": () => fin(reject, new Error("Weryfikacja anty-botowa nie powiodła się. Odśwież stronę i spróbuj ponownie.")),
+        "timeout-callback": () => fin(reject, new Error("Weryfikacja anty-botowa wygasła. Spróbuj ponownie.")),
+      });
+    } catch (e) {
+      fin(reject, new Error("Nie udało się uruchomić ochrony przed botami."));
+    }
+  });
+}
+
+/* ================= ZAPISANE SERWERY (w przeglądarce) ================= */
+const SAVED_KEY = "aidg_saved";
+const SAVED_MAX = 20;
+const SHARE_ID = !isAdmin && /^[a-z0-9]{6,24}$/.test(QS.get("s") || "") ? QS.get("s") : null;
+const openSaved = new Set();
+const prevSaved = {};
+
+function loadSaved() {
+  try {
+    const v = JSON.parse(localStorage.getItem(SAVED_KEY) || "[]");
+    return Array.isArray(v) ? v.filter((x) => x && x.id && x.structure) : [];
+  } catch (e) { return []; }
+}
+function storeSaved(list) {
+  try { localStorage.setItem(SAVED_KEY, JSON.stringify(list)); return true; }
+  catch (e) { toast("Nie można zapisać w tej przeglądarce (brak miejsca lub zablokowany zapis).", "bad"); return false; }
+}
+function fmtDate(ms) {
+  try { return new Date(ms).toLocaleString("pl-PL", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  catch (e) { return new Date(ms).toISOString().slice(0, 16).replace("T", " "); }
+}
+
+function saveServer(s, prompt) {
+  const list = loadSaved();
+  const sig = JSON.stringify(s);
+  if (list.some((x) => JSON.stringify(x.structure) === sig)) { toast("Ten serwer jest już zapisany.", ""); return false; }
+  if (list.length >= SAVED_MAX) { toast("Limit " + SAVED_MAX + " zapisanych serwerów. Usuń któryś (🗑️).", "bad"); return false; }
+  list.unshift({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name: s.serverName, structure: s, prompt: prompt || "", savedAt: Date.now() });
+  if (!storeSaved(list)) return false;
+  toast("Zapisano w tej przeglądarce ✓", "ok");
+  renderSaved();
+  return true;
+}
+
+function renderSaved() {
+  const list = loadSaved();
+  const card = $("saved-card");
+  card.classList.toggle("hidden", !list.length);
+  const box = $("saved-list");
+  box.textContent = "";
+  list.forEach((it) => box.appendChild(savedItem(it)));
+}
+
+function updateSaved(id, fn) {
+  const list = loadSaved();
+  const it = list.find((x) => x.id === id);
+  if (!it) return;
+  fn(it);
+  storeSaved(list);
+}
+
+function savedItem(it) {
+  const open = openSaved.has(it.id);
+  const root = el("div", "sv-item" + (open ? " open" : ""));
+  root.dataset.id = it.id;
+  const head = el("div", "sv-head");
+  const arrow = el("button", "ib", "");
+  arrow.type = "button";
+  arrow.title = "Podgląd";
+  arrow.setAttribute("aria-label", "Podgląd");
+  arrow.dataset.act = "toggle";
+  arrow.appendChild(el("span", "arr", "▶"));
+  const main = el("div", "sv-main");
+  main.appendChild(el("span", "sv-name", it.name));
+  main.appendChild(el("span", "sv-date", "zapisano " + fmtDate(it.savedAt)));
+  const pen = el("button", "ib", "✏️");
+  pen.type = "button"; pen.title = "Zmień nazwę"; pen.setAttribute("aria-label", "Zmień nazwę"); pen.dataset.act = "rename";
+  const del = el("button", "ib del", "🗑️");
+  del.type = "button"; del.title = "Usuń"; del.setAttribute("aria-label", "Usuń"); del.dataset.act = "delete";
+  head.append(arrow, main, pen, del);
+  root.appendChild(head);
+
+  arrow.addEventListener("click", () => {
+    if (openSaved.has(it.id)) openSaved.delete(it.id); else openSaved.add(it.id);
+    renderSaved();
+  });
+  pen.addEventListener("click", () => {
+    const inp = el("input", "");
+    inp.type = "text"; inp.maxLength = 60; inp.value = it.name;
+    main.textContent = "";
+    main.appendChild(inp);
+    inp.focus(); inp.select();
+    let fin = false;
+    const commit = (save) => {
+      if (fin) return; fin = true;
+      const v = inp.value.trim().slice(0, 60);
+      if (save && v && v !== it.name) updateSaved(it.id, (x) => { x.name = v; });
+      renderSaved();
+    };
+    inp.addEventListener("keydown", (e) => { if (e.key === "Enter") commit(true); else if (e.key === "Escape") commit(false); });
+    inp.addEventListener("blur", () => commit(true));
+  });
+  del.addEventListener("click", async () => {
+    if (!(await confirmBox("Usunąć zapisany serwer „" + it.name + "”? Tego nie da się cofnąć.", "Usuń"))) return;
+    storeSaved(loadSaved().filter((x) => x.id !== it.id));
+    openSaved.delete(it.id);
+    delete prevSaved[it.id];
+    renderSaved();
+    toast("Usunięto.", "");
+  });
+
+  if (open) root.appendChild(savedBody(it));
+  return root;
+}
+
+function savedBody(it) {
+  const s = it.structure;
+  const body = el("div", "sv-body");
+  if (s.description) body.appendChild(el("p", "muted", s.description));
+  const tree = el("div", "tree");
+  const roles = el("div", "roles");
+  fillPreview(s, tree, roles);
+  body.append(tree, roles);
+
+  const ref = el("div", "sv-ref");
+  const inp = el("input", "");
+  inp.type = "text"; inp.maxLength = 300; inp.placeholder = "Co zmienić? np. dodaj kanał na memy i rolę VIP";
+  inp.dataset.role = "change";
+  const rb = el("button", "ghost small", "✨ Zmień coś");
+  rb.type = "button";
+  ref.append(inp, rb);
+  if (prevSaved[it.id]) {
+    const undo = el("button", "ghost small", "↩ Cofnij");
+    undo.type = "button";
+    undo.addEventListener("click", () => {
+      const p = prevSaved[it.id];
+      delete prevSaved[it.id];
+      updateSaved(it.id, (x) => { x.structure = p; });
+      renderSaved();
+    });
+    ref.appendChild(undo);
+  }
+  const doRefine = async () => {
+    const change = inp.value.trim();
+    if (change.length < 3) { toast("Napisz, co chcesz zmienić (min. 3 znaki).", "bad"); return; }
+    rb.disabled = true; inp.disabled = true;
+    const old = rb.textContent;
+    rb.textContent = "AI pracuje…";
+    try {
+      const ns = await refineStructure(s, change);
+      prevSaved[it.id] = s;
+      updateSaved(it.id, (x) => { x.structure = ns; });
+      toast("Zmieniono ✓ Możesz cofnąć albo dalej poprawiać.", "ok");
+      renderSaved();
+    } catch (e) {
+      toast(e.message || "Nie udało się zmienić struktury.", "bad");
+      rb.disabled = false; inp.disabled = false; rb.textContent = old;
+    }
+  };
+  rb.addEventListener("click", doRefine);
+  inp.addEventListener("keydown", (e) => { if (e.key === "Enter") doRefine(); });
+  body.appendChild(ref);
+
+  const act = el("div", "sv-act");
+  const use = el("button", "", "🚀 Użyj");
+  use.type = "button";
+  use.addEventListener("click", () => useStructure(s));
+  const sh = el("button", "ghost", "🔗 Udostępnij");
+  sh.type = "button";
+  sh.addEventListener("click", () => shareStructure(s, sh));
+  act.append(use, sh);
+  body.appendChild(act);
+  return body;
+}
+
+/* „Użyj” – rezerwuje bota i buduje dokładnie tę strukturę, bez AI. */
+function useStructure(s) {
+  if (busy) { toast("Poprzednie generowanie jeszcze trwa.", "bad"); return; }
+  if (svc.state === "off" && !bypassInfo()) { toast(svc.message || "Generator jest wyłączony.", "bad"); return; }
+  startFlow(s);
+}
+
+async function refineStructure(s, change) {
+  const bp = bypassInfo();
+  const turnstile = await tsToken();
+  const j = await postJson("/api/refine", { structure: s, change, turnstile, bypass: bp ? bp.token : undefined });
+  return j.structure;
+}
+
+/* ===================== UDOSTĘPNIANIE (link na 7 dni) ===================== */
+async function shareStructure(s, btn) {
+  const old = btn ? btn.textContent : "";
+  if (btn) { btn.disabled = true; btn.textContent = "Tworzę link…"; }
+  try {
+    const turnstile = await tsToken();
+    const j = await postJson("/api/share", { structure: s, turnstile });
+    shareBox(mainUrl() + "?s=" + j.id, j.expires);
+  } catch (e) {
+    toast(e.message || "Nie udało się utworzyć linku.", "bad");
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = old; }
+  }
+}
+
+function shareBox(url, expires) {
+  const ov = el("div", "overlay");
+  const m = el("div", "modal");
+  m.appendChild(el("h2", "", "Link do udostępnienia"));
+  m.appendChild(el("p", "", "Każdy, kto go otworzy, zobaczy podgląd tego serwera i będzie mógł go użyć. Link wygasa " + fmtDate(expires) + "."));
+  const row = el("div", "sharebox");
+  const inp = el("input", "");
+  inp.type = "text"; inp.readOnly = true; inp.value = url; inp.id = "share-url";
+  inp.addEventListener("focus", () => inp.select());
+  const cp = el("button", "small", "Kopiuj");
+  cp.type = "button";
+  cp.addEventListener("click", async () => {
+    const ok = await copyText(url);
+    cp.textContent = ok ? "Skopiowano ✓" : "Zaznacz i skopiuj";
+    if (!ok) inp.select();
+  });
+  row.append(inp, cp);
+  m.appendChild(row);
+  const close = el("button", "ghost small", "Zamknij");
+  close.type = "button";
+  close.addEventListener("click", () => ov.remove());
+  ov.addEventListener("click", (e) => { if (e.target === ov) ov.remove(); });
+  const r2 = el("div", "row");
+  r2.appendChild(close);
+  m.appendChild(r2);
+  ov.appendChild(m);
+  document.body.appendChild(ov);
+  inp.select();
+}
+
+/* Widok udostępnionego serwera (?s=<id>) */
+async function initShared() {
+  const card = $("shared-card");
+  card.classList.remove("hidden");
+  $("sh-title").textContent = "Udostępniony serwer";
+  $("sh-desc").textContent = "Wczytuję…";
+  $("sh-tools").classList.add("hidden");
+  try {
+    const res = await apiFetch("/api/share/" + SHARE_ID);
+    const j = await res.json().catch(() => null);
+    if (!j || j.ok === false || !j.structure) throw new Error((j && j.error) || "Ten link wygasł albo nie istnieje.");
+    const s = j.structure;
+    $("sh-title").textContent = "Udostępniony serwer: " + s.serverName;
+    $("sh-desc").textContent = (s.description ? s.description + " · " : "") + "Link ważny do " + fmtDate(j.expires) + ".";
+    fillPreview(s, $("sh-tree"), $("sh-roles"));
+    $("sh-tools").classList.remove("hidden");
+    $("sh-use").onclick = () => useStructure(s);
+    $("sh-save").onclick = () => saveServer(s, "");
+  } catch (e) {
+    $("sh-desc").textContent = e.message || "Nie udało się wczytać linku.";
+    $("sh-desc").style.color = "#ff6b6e";
+  }
+}
+
+/* ================================ ADMIN ================================ */
+const TOKEN_KEY = "aidg_admin_token";
+const BYPASS_KEY = "aidg_bypass";
+const getToken = () => { try { return sessionStorage.getItem(TOKEN_KEY); } catch (e) { return null; } };
+const setToken = (t) => { try { t ? sessionStorage.setItem(TOKEN_KEY, t) : sessionStorage.removeItem(TOKEN_KEY); } catch (e) {} };
+const sessionEnd = () => Number((getToken() || "").split(".")[0]) || 0;
+
+const state = { tokens: [], health: {}, paused: false, limit: 10, stats: null, config: null, settings: {}, sessionMs: 3600000 };
+let currentPage = "home";
+let sessTimer = null;
+let labResult = null;
+
+const ICONS = {
+  home: '<path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',
+  key: '<path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>',
+  chart: '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+  flask: '<path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2.2h12.4a1.5 1.5 0 0 0 1.3-2.2L14 9V3"/><line x1="7.5" y1="14" x2="16.5" y2="14"/>',
+  sliders: '<line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>',
+  out: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+  scroll: '<path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/>',
+  ext: '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>',
+};
+function svgIcon(name) {
+  const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  s.setAttribute("viewBox", "0 0 24 24");
+  s.setAttribute("aria-hidden", "true");
+  s.innerHTML = ICONS[name]; // stałe, własne ikony
+  return s;
+}
+const PAGES = [
+  { id: "home", label: "Strona główna", icon: "home" },
+  { id: "tokens", label: "Tokeny", icon: "key" },
+  { id: "stats", label: "Statystyki", icon: "chart" },
+  { id: "lab", label: "Laboratorium AI", icon: "flask" },
+  { id: "logs", label: "Logi", icon: "scroll" },
+  { id: "settings", label: "Ustawienia", icon: "sliders" },
+];
+
+async function adminApi(path, method, body) {
+  const headers = { Authorization: "Bearer " + (getToken() || "") };
+  if (body !== undefined) headers["Content-Type"] = "application/json";
+  const res = await apiFetch(path, {
+    method: method || "GET",
+    headers,
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  if (res.status === 401 && path !== "/api/admin/login") {
+    logout("Sesja wygasła – zaloguj się ponownie.");
+    throw new Error("Sesja wygasła – zaloguj się ponownie.");
+  }
+  const j = await res.json().catch(() => null);
+  if (!j) throw new Error("Nieprawidłowa odpowiedź serwera (" + res.status + ").");
+  return j;
+}
+
+/* ---- logowanie / wylogowanie / sesja ---- */
+function showLogin() {
+  ["view-admin", "adm-bar"].forEach((id) => $(id).classList.add("hidden"));
+  closeDrawer();
+  $("view-login").classList.remove("hidden");
+  $("code").value = "";
+  $("code").focus();
+}
+
+function logout(msg) {
+  setToken(null);
+  if (sessTimer) { clearInterval(sessTimer); sessTimer = null; }
+  showLogin();
+  if (msg) toast(msg, "bad");
+}
+
+function fmtLeft(ms) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  const p = (n) => String(n).padStart(2, "0");
+  return p(Math.floor(s / 3600)) + ":" + p(Math.floor((s % 3600) / 60)) + ":" + p(s % 60);
+}
+
+function tickSession() {
+  const end = sessionEnd();
+  const left = end - Date.now();
+  if (!end || left <= 0) { logout("Sesja wygasła – zaloguj się ponownie."); return; }
+  $("sess-left").textContent = fmtLeft(left);
+  const fill = Math.max(0, Math.min(100, (left / state.sessionMs) * 100));
+  $("sess-fill").style.width = fill + "%";
+  $("sess-fill").parentNode.classList.toggle("low", left < 5 * 60000);
+  $("sess-note").textContent = "Wygasa o " + new Date(end).toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" });
+}
+
+function enterAdmin() {
+  $("view-login").classList.add("hidden");
+  $("view-admin").classList.remove("hidden");
+  $("adm-bar").classList.remove("hidden");
+  if (sessTimer) clearInterval(sessTimer);
+  tickSession();
+  sessTimer = setInterval(tickSession, 1000);
+  goPage("home", true);
+  loadDashboard().catch((e) => toast(e.message, "bad"));
+}
+
+/* ---- menu (3 kreski) i strony ---- */
+function openDrawer() {
+  $("drawer").classList.add("open");
+  $("scrim").classList.add("open");
+  $("hamb").classList.add("open");
+  $("drawer").setAttribute("aria-hidden", "false");
+}
+function closeDrawer() {
+  $("drawer").classList.remove("open");
+  $("scrim").classList.remove("open");
+  $("hamb").classList.remove("open");
+  $("drawer").setAttribute("aria-hidden", "true");
+}
+
+function goPage(id, silent) {
+  currentPage = id;
+  PAGES.forEach((p) => {
+    const sec = $("pg-" + p.id);
+    const on = p.id === id;
+    if (on) { sec.classList.remove("hidden"); sec.style.animation = "none"; void sec.offsetWidth; sec.style.animation = ""; }
+    else sec.classList.add("hidden");
+  });
+  document.querySelectorAll("#dr-nav .nav-item").forEach((b) => b.classList.toggle("active", b.dataset.page === id));
+  $("adm-page").textContent = PAGES.find((p) => p.id === id).label;
+  closeDrawer();
+  if (id === "logs") loadLogs();
+  if (!silent) window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function buildNav() {
+  const nav = $("dr-nav");
+  nav.textContent = "";
+  PAGES.forEach((p) => {
+    const b = el("button", "nav-item");
+    b.dataset.page = p.id;
+    b.appendChild(svgIcon(p.icon));
+    b.appendChild(el("span", "", p.label));
+    b.addEventListener("click", () => goPage(p.id));
+    nav.appendChild(b);
+  });
+  const site = el("a", "nav-item");
+  site.href = mainUrl();
+  site.target = "_blank";
+  site.rel = "noopener";
+  site.appendChild(svgIcon("ext"));
+  site.appendChild(el("span", "", "Otwórz generator"));
+  nav.appendChild(site);
+  const lo = $("btn-logout");
+  lo.textContent = "";
+  lo.appendChild(svgIcon("out"));
+  lo.appendChild(el("span", "", "Wyloguj"));
+}
+
+function initAdmin() {
+  document.title = "Panel admina";
+  $("redir").textContent = mainUrl();
+  $("open-site").href = mainUrl();
+  buildNav();
+  $("hamb").addEventListener("click", () => ($("drawer").classList.contains("open") ? closeDrawer() : openDrawer()));
+  $("scrim").addEventListener("click", closeDrawer);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDrawer(); });
+  $("btn-logout").addEventListener("click", () => logout());
+  $("copy-redir").addEventListener("click", async () => {
+    const ok = await copyText(mainUrl());
+    toast(ok ? "Adres skopiowany" : "Nie udało się skopiować – zaznacz go ręcznie", ok ? "ok" : "bad");
+  });
+  $("login-btn").addEventListener("click", doLogin);
+  $("code").addEventListener("keydown", (e) => { if (e.key === "Enter") doLogin(); });
+  $("btn-refresh").addEventListener("click", () => (currentPage === "logs" ? loadLogs() : Promise.resolve()).then(() => loadDashboard()).then(() => toast("Odświeżono", "ok")).catch((e) => toast(e.message, "bad")));
+  $("btn-health").addEventListener("click", () => runHealth(null));
+  $("btn-cleanup").addEventListener("click", runCleanup);
+  $("btn-reset").addEventListener("click", runReset);
+  $("btn-pause").addEventListener("click", togglePause);
+  $("btn-bypass").addEventListener("click", startBypass);
+  $("btn-export").addEventListener("click", exportStats);
+  $("set-save").addEventListener("click", saveSettings);
+  $("lab-run").addEventListener("click", runLab);
+  $("lab-refine-btn").addEventListener("click", refineLab);
+  $("lab-change").addEventListener("keydown", (e) => { if (e.key === "Enter") refineLab(); });
+  document.querySelectorAll("#lab-tabs button").forEach((b) => b.addEventListener("click", () => labTab(b.dataset.tab)));
+  $("lab-copy").addEventListener("click", async () => {
+    const t = labText();
+    const ok = t ? await copyText(t) : false;
+    toast(ok ? "Skopiowano" : "Nie ma czego kopiować", ok ? "ok" : "bad");
+  });
+  $("logs-clear").addEventListener("click", clearLogs);
+  ["lg-type", "lg-level", "lg-star"].forEach((id) => $(id).addEventListener("change", renderLogs));
+  $("lg-q").addEventListener("input", renderLogs);
+  if (getToken() && sessionEnd() > Date.now()) enterAdmin();
+  else { setToken(null); showLogin(); }
+}
+
+async function doLogin() {
+  const err = $("login-err");
+  err.classList.add("hidden");
+  const btn = $("login-btn");
+  btn.disabled = true;
+  try {
+    const res = await apiFetch("/api/admin/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code: $("code").value }),
+    });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok || !j.token) throw new Error(j.error || "Logowanie nieudane.");
+    setToken(j.token);
+    enterAdmin();
+  } catch (e) {
+    err.textContent = e.message;
+    err.classList.remove("hidden");
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/* ---- pomocnicze ---- */
+function ago(iso) {
+  if (!iso) return "nigdy";
+  const s = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
+  if (s < 60) return s + " s temu";
+  if (s < 3600) return Math.round(s / 60) + " min temu";
+  if (s < 86400) return Math.round(s / 3600) + " h temu";
+  return Math.round(s / 86400) + " d temu";
+}
+
+function pill(cls, text) { return el("span", "pill " + cls, text); }
+
+let statIdx = 0;
+function statBox(icon, value, label, color) {
+  const b = el("div", "stat");
+  b.style.setProperty("--i", statIdx++);
+  b.style.setProperty("--c", color);
+  b.appendChild(el("div", "ico", icon));
+  b.appendChild(el("b", "", String(value)));
+  b.appendChild(el("span", "", label));
+  return b;
+}
+
+const getBypass = () => {
+  try {
+    const v = JSON.parse(localStorage.getItem(BYPASS_KEY) || "null");
+    return v && v.token && v.until > Date.now() ? v : null;
+  } catch (e) { return null; }
+};
+
+/* ---- przełącznik generatora i przepustka 30 min ---- */
+function renderPause() {
+  const st = $("pause-state");
+  st.className = "status-pill " + (state.paused ? "bad" : "ok");
+  st.innerHTML = "";
+  st.appendChild(el("i", "live"));
+  st.appendChild(document.createTextNode(state.paused ? "Generator wyłączony" : "Generator włączony"));
+  const b = $("btn-pause");
+  b.textContent = state.paused ? "Włącz generator" : "Wyłącz generator";
+  b.className = state.paused ? "good" : "danger";
+
+  const bp = getBypass();
+  const btn = $("btn-bypass");
+  const info = $("bypass-info");
+  btn.classList.toggle("hidden", !(state.paused && !bp));
+  info.classList.toggle("hidden", !(state.paused && bp));
+  info.textContent = "";
+  if (state.paused && bp) {
+    const t = new Date(bp.until).toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" });
+    info.appendChild(document.createTextNode("Przepustka aktywna do " + t + ". W tej przeglądarce generator działa dla Ciebie, inni nadal widzą, że jest wyłączony. "));
+    const end = el("button", "small ghost", "Zakończ");
+    end.style.marginTop = "6px";
+    end.addEventListener("click", () => { try { localStorage.removeItem(BYPASS_KEY); } catch (e) {} renderPause(); toast("Przepustka zakończona", "ok"); });
+    info.appendChild(document.createElement("br"));
+    info.appendChild(end);
+  }
+}
+
+async function startBypass() {
+  const b = $("btn-bypass");
+  b.disabled = true;
+  try {
+    const j = await adminApi("/api/admin/bypass", "POST", { minutes: 30 });
+    if (!j.ok) throw new Error(j.error || "Błąd.");
+    try { localStorage.setItem(BYPASS_KEY, JSON.stringify({ token: j.token, until: j.until })); } catch (e) { throw new Error("Przeglądarka blokuje zapis (localStorage)."); }
+    renderPause();
+    toast("Generator włączony dla Ciebie na 30 min", "ok");
+  } catch (e) {
+    toast(e.message, "bad");
+  } finally {
+    b.disabled = false;
+  }
+}
+
+function renderBanners(c) {
+  const box = $("banners");
+  box.textContent = "";
+  const add = (cls, text) => box.appendChild(el("div", "banner " + cls, text));
+  if (!API_READY) add("bad", "API_URL w index.html nie jest ustawiony.");
+  if (!c.kv) add("", "Brak podpiętego KV (zmienna STATS): limity godzinowe, statystyki, ustawienia i wyłączenia tokenów działają tylko w pamięci jednej instancji. Dodaj KV w ustawieniach Workera.");
+  if (c.activeGroq === 0) add("bad", "Brak aktywnych kluczy Groq – generator nie zadziała.");
+  if (c.activeBots === 0) add("bad", "Brak aktywnych botów Discord – generator nie zadziała.");
+  if (state.paused) add("bad", "Generator jest wyłączony – odwiedzający widzą komunikat i nie mogą kliknąć Generuj.");
+}
+
+/* ---- tokeny ---- */
+function renderTokens(tokens) {
+  const draw = (target, rows, isBot) => {
+    const box = $(target);
+    box.textContent = "";
+    if (!rows.length) {
+      box.appendChild(el("div", "empty", "Brak wpisów w CONFIG na górze worker.js."));
+      return;
+    }
+    rows.forEach((r) => {
+      const h = state.health[r.id];
+      const card = el("div", "tok" + (r.enabled ? "" : " off"));
+
+      const head = el("div", "tok-head");
+      const nm = el("div", "tok-name");
+      const bad = h && (!h.ok || h.public === false || h.hasModel === false);
+      const dotCls = !r.enabled ? "" : (bad ? " bad" : " on");
+      nm.appendChild(el("span", "sd" + dotCls));
+      const nmText = el("div");
+      nmText.appendChild(document.createTextNode(r.name));
+      nmText.appendChild(el("div", "tok-sub", "ostatnie użycie: " + ago(r.last)));
+      nm.appendChild(nmText);
+      head.appendChild(nm);
+
+      const btns = el("div", "tok-btns");
+      const test = el("button", "ghost small", "Test");
+      test.addEventListener("click", () => runHealth(r.id, test));
+      const tg = el("button", "small " + (r.enabled ? "danger" : "good"), r.enabled ? "Wyłącz" : "Włącz");
+      tg.addEventListener("click", async () => {
+        tg.disabled = true;
+        try {
+          const j = await adminApi("/api/admin/toggle", "POST", { id: r.id, enabled: !r.enabled });
+          if (!j.ok) throw new Error(j.error || "Błąd.");
+          toast(j.kvSaved
+            ? (r.enabled ? "Token wyłączony" : "Token włączony") + " (inne instancje po ok. 30 s)"
+            : "Zmiana tylko w pamięci – podepnij KV, żeby była trwała", j.kvSaved ? "ok" : "bad");
+          await loadDashboard();
+        } catch (e) {
+          toast(e.message, "bad");
+          tg.disabled = false;
+        }
+      });
+      btns.appendChild(test);
+      btns.appendChild(tg);
+      head.appendChild(btns);
+      card.appendChild(head);
+
+      const mt = el("div", "metrics");
+      mt.appendChild(el("span", "m g", "✓ " + r.ok));
+      mt.appendChild(el("span", "m r", "✗ " + r.fail));
+      mt.appendChild(el("span", "m", r.enabled ? "aktywny" : "wyłączony"));
+      if (isBot) {
+        const used = r.used || 0;
+        mt.appendChild(el("span", "m " + (used >= state.limit ? "w" : ""), "ta godzina: " + used + "/" + state.limit));
+      }
+      if (h) {
+        mt.appendChild(el("span", "m " + (h.ok ? "g" : "r"), "test: " + (h.ok ? "OK" : "HTTP " + h.status)));
+        if (isBot && h.public !== undefined) mt.appendChild(el("span", "m " + (h.public ? "g" : "r"), h.public ? "publiczny" : "NIE publiczny"));
+        if (isBot && h.codeGrant) mt.appendChild(el("span", "m r", "włączony Code Grant (wyłącz)"));
+        if (isBot && h.guilds !== undefined) mt.appendChild(el("span", "m", "serwery: " + h.guilds));
+        if (!isBot && h.hasModel !== undefined) mt.appendChild(el("span", "m " + (h.hasModel ? "g" : "r"), h.hasModel ? "ma model z CONFIG" : "brak modelu z CONFIG"));
+      }
+      card.appendChild(mt);
+      if (r.err) card.appendChild(el("div", "tok-err", "Ostatni błąd: " + r.err));
+      box.appendChild(card);
+    });
+  };
+  const g = tokens.filter((x) => x.kind === "groq");
+  const b = tokens.filter((x) => x.kind === "bot");
+  draw("tbl-groq", g, false);
+  draw("tbl-bots", b, true);
+  $("groq-sum").textContent = g.filter((x) => x.enabled).length + " / " + g.length + " aktywnych";
+  $("bot-sum").textContent = b.filter((x) => x.enabled).length + " / " + b.length + " aktywnych";
+}
+
+/* ---- wykres 14 dni, statystyki, zdarzenia, ustawienia ---- */
+function renderChart(s) {
+  const days = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    days.push([d, (s.days && s.days[d]) || 0]);
+  }
+  const max = Math.max(1, ...days.map((d) => d[1]));
+  const bars = $("bars");
+  bars.textContent = "";
+  days.forEach(([d, v], idx) => {
+    const col = el("div", "barcol");
+    const bar = el("div", "bar" + (idx === days.length - 1 ? " today" : ""));
+    bar.style.height = Math.max(2, Math.round((v / max) * 88)) + "px";
+    bar.style.animationDelay = idx * 30 + "ms";
+    bar.title = d + ": " + v;
+    if (v) bar.appendChild(el("b", "", String(v)));
+    col.appendChild(bar);
+    col.appendChild(el("div", "barlbl", d.slice(8)));
+    bars.appendChild(col);
+  });
+}
+
+function renderStats(s, c) {
+  const rate = s.ok + s.fail ? Math.round((s.ok / (s.ok + s.fail)) * 100) + "%" : "–";
+  statIdx = 0;
+  const mini = $("stat-mini");
+  mini.textContent = "";
+  mini.appendChild(statBox("🚀", s.total, "Rozpoczęte generacje", "#5865F2"));
+  mini.appendChild(statBox("✅", s.ok, "Zbudowane serwery", "#23a55a"));
+  mini.appendChild(statBox("⚠️", s.fail, "Nieudane / odrzucone", "#f23f43"));
+  mini.appendChild(statBox("📈", rate, "Skuteczność", "#f0b232"));
+
+  const grid = $("stat-grid");
+  grid.textContent = "";
+  statIdx = 0;
+  const today = new Date().toISOString().slice(0, 10);
+  const week = Object.entries(s.days || {}).filter(([d]) => Date.now() - Date.parse(d) < 7 * 86400000).reduce((a, [, v]) => a + v, 0);
+  grid.appendChild(statBox("🚀", s.total, "Rozpoczęte generacje", "#5865F2"));
+  grid.appendChild(statBox("✅", s.ok, "Zbudowane serwery", "#23a55a"));
+  grid.appendChild(statBox("⚠️", s.fail, "Nieudane / odrzucone", "#f23f43"));
+  grid.appendChild(statBox("📈", rate, "Skuteczność", "#f0b232"));
+  grid.appendChild(statBox("📅", (s.days && s.days[today]) || 0, "Dzisiaj", "#00a8fc"));
+  grid.appendChild(statBox("🗓️", week, "Ostatnie 7 dni", "#9aa4ff"));
+  grid.appendChild(statBox("🏗️", c.activeBots * c.hourlyLimit, "Pojemność (serwerów / godz.)", "#23a55a"));
+  grid.appendChild(statBox("🔁", s.groqFailovers + s.discordFailovers, "Przełączeń (Groq + boty)", "#b5bac1"));
+
+  $("stat-note").textContent =
+    "Model: " + (c.models || []).join(" → ") + " · limit: " + c.hourlyLimit + " serwerów / bot / godz. · czas na dodanie bota: " + c.jobTtl + " min" +
+    (c.kv ? " · statystyki zapisywane zbiorczo (wartości przybliżone)" : "");
+}
+
+function renderEvents(s) {
+  const list = $("log-list");
+  list.textContent = "";
+  const log = s.log || [];
+  if (!log.length) list.appendChild(el("div", "empty", "Brak zdarzeń."));
+  log.forEach((e, i) => {
+    const it = el("div", "ev");
+    it.style.animationDelay = Math.min(i, 12) * 25 + "ms";
+    const top = el("div", "ev-top");
+    top.appendChild(pill(e.ok ? "ok" : "bad", e.ok ? "OK" : "BŁĄD"));
+    top.appendChild(pill("ai", e.kind === "build" ? "BUDOWA" : "AI"));
+    top.appendChild(el("span", "", ago(e.t)));
+    if (e.ms !== undefined && e.ms !== null) top.appendChild(el("span", "", (e.ms / 1000).toFixed(1) + " s"));
+    it.appendChild(top);
+    if (e.prompt) it.appendChild(el("div", "ev-prompt", e.prompt));
+    if (e.error) it.appendChild(el("div", "ev-err", e.error));
+    list.appendChild(it);
+  });
+}
+
+function renderSettings(c, st) {
+  $("set-ann").value = st.announcement || "";
+  $("set-off").value = st.offMessage || "";
+  $("set-hourly").value = st.botHourly || "";
+  $("set-rate").value = st.ratePerMin || "";
+  $("set-maxp").value = st.maxPrompt || "";
+  $("set-clean").checked = st.allowClean !== false;
+  const info = $("sys-info");
+  info.textContent = "";
+  const row = (k, v) => { const d = el("div"); d.appendChild(el("span", "", k)); d.appendChild(el("span", "", String(v))); info.appendChild(d); };
+  row("Wersja Workera", c.version || "?");
+  row("Model AI", (c.models || []).join(", "));
+  row("Klucze Groq", c.activeGroq + " / " + c.groqKeys + " aktywnych");
+  row("Boty Discord", c.activeBots + " / " + c.bots + " aktywnych");
+  row("Limit godzinowy / bota", c.hourlyLimit);
+  row("Limit startów / min / IP", c.ratePerMin);
+  row("Maks. znaków opisu", c.maxPrompt);
+  row("Uprawnienia bota", c.permissions === "8" ? "Administrator (8)" : c.permissions);
+  row("Czas na dodanie bota", c.jobTtl + " min");
+  row("Sesja admina", c.sessionHours + " h");
+  row("Pamięć KV (STATS)", c.kv ? "podpięta" : "brak");
+  row("Ochrona Turnstile", c.turnstile ? "włączona" : "wyłączona");
+  row("Ważność linków „Udostępnij”", (c.shareDays || 7) + " dni");
+}
+
+async function loadDashboard() {
+  const j = await adminApi("/api/admin/stats");
+  if (!j.ok) throw new Error(j.error || "Błąd pobierania danych.");
+  const s = j.stats;
+  const c = j.config;
+  state.stats = s;
+  state.config = c;
+  state.settings = j.settings || {};
+  state.paused = !!j.paused;
+  state.tokens = j.tokens || [];
+  state.limit = c.hourlyLimit;
+  state.sessionMs = (c.sessionHours || 1) * 3600000;
+  renderStats(s, c);
+  renderBanners(c);
+  renderPause();
+  renderChart(s);
+  renderTokens(state.tokens);
+  renderEvents(s);
+  renderSettings(c, state.settings);
+  tickSession();
+}
+
+async function togglePause() {
+  const b = $("btn-pause");
+  b.disabled = true;
+  try {
+    const j = await adminApi("/api/admin/pause", "POST", { paused: !state.paused });
+    if (!j.ok) throw new Error(j.error || "Błąd.");
+    state.paused = j.paused;
+    toast(j.paused ? "Generator wyłączony" : "Generator włączony", "ok");
+    await loadDashboard();
+  } catch (e) {
+    toast(e.message, "bad");
+  } finally {
+    b.disabled = false;
+  }
+}
+
+async function saveSettings() {
+  const b = $("set-save");
+  b.disabled = true;
+  try {
+    const body = {
+      announcement: $("set-ann").value,
+      offMessage: $("set-off").value,
+      botHourly: $("set-hourly").value,
+      ratePerMin: $("set-rate").value,
+      maxPrompt: $("set-maxp").value,
+      allowClean: $("set-clean").checked,
+    };
+    const j = await adminApi("/api/admin/settings", "POST", body);
+    if (!j.ok) throw new Error(j.error || "Błąd.");
+    toast(j.kvSaved ? "Ustawienia zapisane" : "Zapisane tylko w pamięci – podepnij KV, żeby były trwałe", j.kvSaved ? "ok" : "bad");
+    await loadDashboard();
+  } catch (e) {
+    toast(e.message, "bad");
+  } finally {
+    b.disabled = false;
+  }
+}
+
+/* ---- laboratorium AI ---- */
+const PERM_PL = { ADMINISTRATOR: "Administrator" };
+function renderLab(structure) {
+  labResult = structure;
+  $("lab-card").classList.remove("hidden");
+  const tree = $("lab-tree");
+  tree.textContent = "";
+  let n = 0;
+  structure.categories.forEach((cat) => {
+    const box = el("div", "cat");
+    box.appendChild(el("div", "cat-name", cat.name + (cat.overwrites && cat.overwrites.length ? " 🔒" : "")));
+    cat.channels.forEach((ch) => {
+      const row = el("div", "chan");
+      row.style.setProperty("--i", Math.min(n++, 40));
+      row.appendChild(el("span", "ic", ch.type === 2 ? "🔊" : "#"));
+      row.appendChild(document.createTextNode(ch.name));
+      if (ch.topic) row.appendChild(el("span", "topic", ch.topic));
+      box.appendChild(row);
+    });
+    tree.appendChild(box);
+  });
+  const roles = $("lab-roles");
+  roles.textContent = "";
+  structure.roles.forEach((r, i) => {
+    const chip = el("span", "role");
+    chip.style.setProperty("--i", Math.min(i, 20));
+    const dot = el("span", "dot");
+    dot.style.background = r.color ? "#" + r.color.toString(16).padStart(6, "0") : "#99aab5";
+    chip.appendChild(dot);
+    chip.appendChild(document.createTextNode(r.name));
+    const perms = (r.permissions || []).length;
+    if (perms) chip.appendChild(el("span", "perm", (r.permissions.includes("ADMINISTRATOR") ? "★ admin" : perms + " upr.")));
+    roles.appendChild(chip);
+  });
+}
+
+let labMeta = null;
+let labTabNow = "view";
+function labTab(t) {
+  labTabNow = t;
+  document.querySelectorAll("#lab-tabs button").forEach((b) => b.classList.toggle("on", b.dataset.tab === t));
+  ["view", "json", "raw", "info", "msg"].forEach((k) => $("lab-p-" + k).classList.toggle("hidden", k !== t));
+  $("lab-refine").classList.toggle("hidden", !labResult);
+}
+function labText() {
+  if (labTabNow === "json") return labResult ? JSON.stringify(labResult, null, 2) : "";
+  if (labTabNow === "raw") return labMeta ? labMeta.raw || "" : "";
+  if (labTabNow === "msg") return labMeta ? labMeta.userMessage || "" : "";
+  if (labTabNow === "info") return labMeta ? JSON.stringify(Object.assign({}, labMeta, { raw: undefined, userMessage: undefined }), null, 2) : "";
+  return labResult ? JSON.stringify(labResult, null, 2) : "";
+}
+function prettyRaw(r) {
+  if (!r) return "(pusto – AI nic nie zwróciło)";
+  try { return JSON.stringify(JSON.parse(r), null, 2); } catch (e) { return r; }
+}
+function renderLabMeta(m, title) {
+  labMeta = m || null;
+  $("lab-card").classList.remove("hidden");
+  $("lab-title").textContent = title;
+  $("lab-p-json").textContent = labResult ? JSON.stringify(labResult, null, 2) : "(brak poprawnej struktury)";
+  $("lab-p-raw").textContent = m ? prettyRaw(m.raw) : "";
+  $("lab-p-msg").textContent = m ? "(prompt systemowy: " + (m.systemChars || "?") + " znaków, niewyświetlany)\n\n" + (m.userMessage || "") : "";
+  const kv = $("lab-kv");
+  kv.textContent = "";
+  const row = (k, v) => { const d = el("div"); d.appendChild(el("span", "", k)); d.appendChild(el("span", "", String(v))); kv.appendChild(d); };
+  if (m) {
+    row("Model", m.model || "—");
+    row("Klucz Groq", m.key || "—");
+    row("Próby", m.attempts + (m.failovers ? " (przełączeń kluczy: " + m.failovers + ")" : ""));
+    row("Tryb JSON", m.jsonMode === undefined ? "—" : m.jsonMode ? "tak" : "nie (awaryjnie)");
+    row("Powód zakończenia", m.finish || "—");
+    row("Wykryty język", m.language || "—");
+    if (m.usage) row("Tokeny (wejście / wyjście / razem)", [m.usage.prompt_tokens, m.usage.completion_tokens, m.usage.total_tokens].map((x) => (x === undefined ? "?" : x)).join(" / "));
+    row("Długość surowej odpowiedzi", (m.raw || "").length + " znaków");
+  }
+  if (labResult) {
+    const chs = labResult.categories.reduce((n, c) => n + c.channels.length, 0);
+    row("Struktura", labResult.categories.length + " kat. · " + chs + " kanałów · " + labResult.roles.length + " ról");
+  }
+  const wl = $("lab-warn");
+  wl.textContent = "";
+  ((m && m.warnings) || []).forEach((w) => wl.appendChild(el("li", "", w)));
+}
+async function runLabRequest(payload, btn, busyText, idleText) {
+  btn.disabled = true;
+  btn.textContent = busyText;
+  $("lab-meta").textContent = "";
+  try {
+    const j = await adminApi("/api/admin/preview", "POST", payload);
+    if (!j.ok) {
+      labResult = payload.base ? labResult : null;
+      renderLabMeta(j.meta, "Błąd: " + (j.error || "AI nie zwróciło wyniku"));
+      labTab(j.meta && j.meta.raw ? "raw" : "info");
+      throw new Error(j.error || "Błąd AI.");
+    }
+    renderLab(j.structure);
+    renderLabMeta(j.meta, j.structure.serverName + " · " + (j.ms / 1000).toFixed(1) + " s");
+    $("lab-meta").textContent = j.structure.categories.length + " kategorii · " + j.structure.roles.length + " ról";
+    labTab("view");
+    loadDashboard().catch(() => {});
+  } catch (e) {
+    toast(e.message, "bad");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = idleText;
+  }
+}
+async function runLab() {
+  const prompt = $("lab-prompt").value.trim();
+  if (prompt.length < 5) { toast("Opisz serwer dokładniej (min. 5 znaków)", "bad"); return; }
+  await runLabRequest({ prompt }, $("lab-run"), "AI projektuje…", "Zaprojektuj");
+}
+async function refineLab() {
+  const change = $("lab-change").value.trim();
+  if (!labResult) { toast("Najpierw wygeneruj strukturę.", "bad"); return; }
+  if (change.length < 3) { toast("Opisz zmianę (min. 3 znaki)", "bad"); return; }
+  await runLabRequest({ base: labResult, change }, $("lab-refine-btn"), "AI pracuje…", "✨ Zmień coś");
+  $("lab-change").value = "";
+}
+
+/* ---- logi ---- */
+let logsData = [];
+const LOG_TYPES = { login: "logowanie", admin: "admin", ai: "AI", build: "budowanie", token: "token", security: "bezpieczeństwo", share: "udostępnianie" };
+async function loadLogs() {
+  try {
+    const j = await adminApi("/api/admin/logs");
+    if (!j.ok) throw new Error(j.error || "Błąd pobierania logów.");
+    logsData = j.logs || [];
+    $("logs-info").textContent = "Zmiany w panelu, logowania, błędy AI i tokenów, wyniki budowania. Wpisy starsze niż " + (j.keepDays || 14) + " dni są usuwane automatycznie, chyba że mają gwiazdkę ★." + (j.kv ? "" : " Logi są trzymane tylko w pamięci Workera (oszczędzają KV), więc znikają po jego restarcie. Gwiazdka chroni je przed 14-dniowym czyszczeniem, nie przed restartem.");
+    renderLogs();
+  } catch (e) {
+    toast(e.message, "bad");
+  }
+}
+function renderLogs() {
+  const type = $("lg-type").value, level = $("lg-level").value, q = $("lg-q").value.trim().toLowerCase(), only = $("lg-star").checked;
+  const list = logsData.filter((l) => (!type || l.type === type) && (!level || l.level === level) && (!only || l.star) && (!q || String(l.msg).toLowerCase().includes(q)));
+  const box = $("logs-list");
+  box.textContent = "";
+  if (!list.length) { box.appendChild(el("div", "muted", logsData.length ? "Brak wpisów dla tych filtrów." : "Brak logów.")); return; }
+  list.slice(0, 300).forEach((l) => {
+    const row = el("div", "lg " + (l.level || "info") + (l.star ? " starred" : ""));
+    const st = el("button", "star", l.star ? "★" : "☆");
+    st.type = "button";
+    st.title = l.star ? "Zdejmij gwiazdkę (usunie się po 14 dniach)" : "Zachowaj na stałe";
+    st.setAttribute("aria-label", "Gwiazdka");
+    st.addEventListener("click", () => toggleStar(l, st, row));
+    const m = el("div", "lm");
+    const tag = el("span", "tag", LOG_TYPES[l.type] || l.type);
+    m.appendChild(tag);
+    m.appendChild(document.createTextNode(l.msg));
+    m.appendChild(el("div", "lt", fmtDate(new Date(l.t).getTime())));
+    row.append(st, m);
+    box.appendChild(row);
+  });
+  if (list.length > 300) box.appendChild(el("div", "muted", "Pokazano 300 z " + list.length + " – zawęź filtry."));
+}
+async function toggleStar(l, btn, row) {
+  btn.disabled = true;
+  try {
+    const j = await adminApi("/api/admin/logs/star", "POST", { id: l.id, star: !l.star });
+    if (!j.ok) throw new Error(j.error || "Błąd.");
+    if (j.star) l.star = true; else delete l.star;
+    renderLogs();
+  } catch (e) {
+    toast(e.message, "bad");
+    btn.disabled = false;
+  }
+}
+async function clearLogs() {
+  const n = logsData.filter((l) => !l.star).length;
+  if (!n) { toast("Nie ma niegwiazdkowanych logów.", ""); return; }
+  if (!(await confirmBox("Usunąć " + n + " logów bez gwiazdki? Tego nie da się cofnąć.", "Wyczyść"))) return;
+  try {
+    const j = await adminApi("/api/admin/logs/clear", "POST", {});
+    if (!j.ok) throw new Error(j.error || "Błąd.");
+    toast("Usunięto " + j.removed + " logów", "ok");
+    await loadLogs();
+  } catch (e) {
+    toast(e.message, "bad");
+  }
+}
+
+function exportStats() {
+  if (!state.stats) { toast("Brak danych – odśwież panel", "bad"); return; }
+  const data = { exportedAt: new Date().toISOString(), stats: state.stats, tokens: state.tokens, settings: state.settings };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "statystyki-generatora.json";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  toast("Statystyki pobrane", "ok");
+}
+
+/* Test tokenów w paczkach (limit zapytań Workera): Groq po 10, boty po 20. */
+async function runHealth(id, btn) {
+  const b = btn || $("btn-health");
+  const old = b.textContent;
+  b.disabled = true;
+  b.textContent = "Testuję…";
+  try {
+    let batches;
+    if (id) {
+      batches = [[id]];
+    } else {
+      const groq = state.tokens.filter((t) => t.kind === "groq").map((t) => t.id);
+      const bots = state.tokens.filter((t) => t.kind === "bot").map((t) => t.id);
+      batches = [];
+      for (let i = 0; i < groq.length; i += 10) batches.push(groq.slice(i, i + 10));
+      for (let i = 0; i < bots.length; i += 20) batches.push(bots.slice(i, i + 20));
+    }
+    let all = {};
+    for (const ids of batches) {
+      const j = await adminApi("/api/admin/health", "POST", { ids });
+      if (!j.ok) throw new Error(j.error || "Błąd testu.");
+      all = Object.assign(all, j.results || {});
+    }
+    state.health = Object.assign({}, state.health, all);
+    renderTokens(state.tokens);
+    const res = Object.values(all);
+    const bad = res.filter((r) => !r.ok || r.public === false).length;
+    toast(bad ? "Test: " + bad + " z " + res.length + " ma problem" : "Test: wszystko działa (" + res.length + ")", bad ? "bad" : "ok");
+  } catch (e) {
+    toast(e.message, "bad");
+  } finally {
+    b.disabled = false;
+    b.textContent = old;
+  }
+}
+
+async function runCleanup() {
+  const yes = await confirmBox("Wyprowadzić boty ze WSZYSTKICH serwerów, na których teraz są? Jeśli ktoś właśnie buduje serwer, jego budowa się przerwie.", "Wyprowadź");
+  if (!yes) return;
+  try {
+    const j = await adminApi("/api/admin/cleanup", "POST");
+    toast("Boty opuściły serwerów: " + j.left + " (przeskanowano: " + j.scanned + ")", "ok");
+  } catch (e) {
+    toast(e.message, "bad");
+  }
+}
+
+async function runReset() {
+  const yes = await confirmBox("Zresetować błędy tokenów i statystyki? Blokady po awariach znikną, a liczniki wrócą do zera. Tego nie da się cofnąć.", "Resetuj");
+  if (!yes) return;
+  try {
+    await adminApi("/api/admin/reset", "POST");
+    await loadDashboard();
+    toast("Błędy i statystyki zresetowane", "ok");
+  } catch (e) {
+    toast(e.message, "bad");
+  }
+}
+
+/* ================================ START ================================ */
+if (isAdmin) initAdmin(); else initMain();
+</script>
+</body>
+</html>
